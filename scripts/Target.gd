@@ -56,7 +56,7 @@ func take_hit() -> void:
 		queue_free()
 	else:
 		modulate = Color(1, 1, 1, 0.65)
-		var tween := create_tween()
+		var tween = create_tween()
 		tween.tween_property(self, "modulate", Color(1, 1, 1, 1), 0.12)
 		queue_redraw()
 
@@ -65,11 +65,11 @@ func get_hit_radius() -> float:
 
 func _draw() -> void:
 	# Fragmento de la Energía del Inti / enemigo circular.
-	var r := hit_radius
+	var r = hit_radius
 	for i in range(16):
-		var a := TAU * float(i) / 16.0
-		var p1 := Vector2(cos(a), sin(a)) * (r * 0.62)
-		var p2 := Vector2(cos(a), sin(a)) * (r * 1.12)
+		var a = TAU * float(i) / 16.0
+		var p1 = Vector2(cos(a), sin(a)) * (r * 0.62)
+		var p2 = Vector2(cos(a), sin(a)) * (r * 1.12)
 		draw_line(p1, p2, Color(1.0, 0.82, 0.20, 0.65), 3.0)
 	draw_circle(Vector2.ZERO, r, Color(tint.r, tint.g, tint.b, 0.82))
 	draw_circle(Vector2.ZERO, r * 0.62, Color(1.0, 0.88, 0.25, 0.95))

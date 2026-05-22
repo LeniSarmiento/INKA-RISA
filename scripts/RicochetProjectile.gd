@@ -29,7 +29,7 @@ func setup(angle_rad: float, projectile_speed: float, p_max_bounces: int = 3) ->
 func _process(delta: float) -> void:
 	if finished:
 		return
-	var old_pos := global_position
+	var old_pos = global_position
 	trail.append(global_position)
 	if trail.size() > 15:
 		trail.pop_front()
@@ -77,7 +77,7 @@ func _finish(was_hit: bool) -> void:
 func _draw() -> void:
 	for i in range(trail.size()):
 		var p: Vector2 = to_local(trail[i])
-		var a := float(i + 1) / float(trail.size())
+		var a = float(i + 1) / float(trail.size())
 		draw_circle(p, 6.0 * a, Color(0.0, 0.88, 1.0, 0.18 * a))
 	draw_circle(Vector2.ZERO, 10.0, Color(0.0, 0.88, 1.0, 0.95))
 	draw_circle(Vector2.ZERO, 18.0, Color(1.0, 0.9, 0.18, 0.28))

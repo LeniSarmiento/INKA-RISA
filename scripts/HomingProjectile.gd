@@ -34,10 +34,10 @@ func _process(delta: float) -> void:
 		trail.pop_front()
 	_update_target_reference()
 	if is_instance_valid(target_node):
-		var desired_direction := (target_node.global_position - global_position).normalized()
-		var current_angle := direction.angle()
-		var desired_angle := desired_direction.angle()
-		var new_angle := lerp_angle(current_angle, desired_angle, clamp(turn_speed * delta, 0.0, 1.0))
+		var desired_direction = (target_node.global_position - global_position).normalized()
+		var current_angle = direction.angle()
+		var desired_angle = desired_direction.angle()
+		var new_angle = lerp_angle(current_angle, desired_angle, clamp(turn_speed * delta, 0.0, 1.0))
 		direction = Vector2(cos(new_angle), sin(new_angle)).normalized()
 		rotation = new_angle
 		current_angle_deg = rad_to_deg(new_angle)
@@ -54,11 +54,11 @@ func _update_target_reference() -> void:
 	if is_instance_valid(target_node) and not target_node.is_dead:
 		return
 	var best_target: Node2D = null
-	var best_distance := INF
+	var best_distance = INF
 	for target in get_tree().get_nodes_in_group("targets"):
 		if not is_instance_valid(target) or target.is_dead:
 			continue
-		var d := global_position.distance_to(target.global_position)
+		var d = global_position.distance_to(target.global_position)
 		if d < best_distance:
 			best_distance = d
 			best_target = target
@@ -83,11 +83,11 @@ func _finish(was_hit: bool) -> void:
 func _draw() -> void:
 	for i in range(trail.size()):
 		var p: Vector2 = to_local(trail[i])
-		var a := float(i + 1) / float(trail.size())
+		var a = float(i + 1) / float(trail.size())
 		draw_circle(p, 5.0 * a, Color(0.6, 1.0, 0.28, 0.16 * a))
 	draw_circle(Vector2.ZERO, 9.0, Color(0.6, 1.0, 0.28, 0.95))
 	draw_circle(Vector2.ZERO, 17.0, Color(0.0, 0.75, 0.95, 0.22))
 	draw_line(Vector2(-20, 0), Vector2(25, 0), Color(1.0, 0.94, 0.40, 0.9), 3.0)
 	if is_instance_valid(target_node):
-		var local_target := to_local(target_node.global_position)
+		var local_target = to_local(target_node.global_position)
 		draw_line(Vector2.ZERO, local_target.normalized() * 44.0, Color(0.6, 1.0, 0.28, 0.70), 2.0)

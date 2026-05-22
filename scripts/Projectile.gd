@@ -55,7 +55,7 @@ func _finish(was_hit: bool) -> void:
 func _draw() -> void:
 	for i in range(trail.size()):
 		var p: Vector2 = to_local(trail[i])
-		var a := float(i + 1) / float(trail.size())
+		var a = float(i + 1) / float(trail.size())
 		draw_circle(p, 8.0 * a, Color(1.0, 0.72, 0.12, 0.16 * a))
 	draw_circle(Vector2.ZERO, 9, Color(1.0, 0.86, 0.16, 0.98))
 	draw_circle(Vector2.ZERO, 15, Color(1.0, 0.35, 0.08, 0.30))

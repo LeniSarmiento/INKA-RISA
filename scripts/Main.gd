@@ -1,13 +1,13 @@
 extends Node2D
 
-const BACKGROUND_SCENE := preload("res://scenes/Background.tscn")
-const PLAYER_SCENE := preload("res://scenes/Player.tscn")
-const PROJECTILE_SCENE := preload("res://scenes/Projectile.tscn")
-const TARGET_SCENE := preload("res://scenes/Target.tscn")
-const RICOCHET_PROJECTILE_SCENE := preload("res://scenes/RicochetProjectile.tscn")
-const HOMING_PROJECTILE_SCENE := preload("res://scenes/HomingProjectile.tscn")
-const LASER_SENSOR_SCENE := preload("res://scenes/LaserSensor.tscn")
-const RICOCHET_WALL_SCENE := preload("res://scenes/RicochetWall.tscn")
+const BACKGROUND_SCENE = preload("res://scenes/Background.tscn")
+const PLAYER_SCENE = preload("res://scenes/Player.tscn")
+const PROJECTILE_SCENE = preload("res://scenes/Projectile.tscn")
+const TARGET_SCENE = preload("res://scenes/Target.tscn")
+const RICOCHET_PROJECTILE_SCENE = preload("res://scenes/RicochetProjectile.tscn")
+const HOMING_PROJECTILE_SCENE = preload("res://scenes/HomingProjectile.tscn")
+const LASER_SENSOR_SCENE = preload("res://scenes/LaserSensor.tscn")
+const RICOCHET_WALL_SCENE = preload("res://scenes/RicochetWall.tscn")
 
 var background: Node2D
 var player: Node2D
@@ -91,7 +91,7 @@ func _process(delta: float) -> void:
 	if cooldown_timer > 0.0:
 		cooldown_timer -= delta
 
-	var direction := get_global_mouse_position() - player.global_position
+	var direction = get_global_mouse_position() - player.global_position
 	if direction.length() > 1.0:
 		theta_base_rad = direction.angle()
 		theta_base_deg = rad_to_deg(theta_base_rad)
@@ -201,7 +201,7 @@ func setup_ricochet_arena() -> void:
 	_create_wall(Vector2(1060, 520), Vector2(28, 170), "Muro final")
 
 func _create_wall(pos: Vector2, size: Vector2, label: String) -> void:
-	var wall := RICOCHET_WALL_SCENE.instantiate()
+	var wall = RICOCHET_WALL_SCENE.instantiate()
 	wall.position = pos
 	add_child(wall)
 	wall.setup(size, label)
@@ -224,16 +224,16 @@ func try_shoot(is_spread: bool) -> void:
 	update_hud()
 
 func shoot_spread() -> void:
-	var center_index := float(projectile_count - 1) / 2.0
+	var center_index = float(projectile_count - 1) / 2.0
 	for i in range(projectile_count):
-		var offset_deg := (float(i) - center_index) * delta_theta_deg
-		var angle := theta_base_rad + deg_to_rad(offset_deg)
+		var offset_deg = (float(i) - center_index) * delta_theta_deg
+		var angle = theta_base_rad + deg_to_rad(offset_deg)
 		shoot_projectile(angle, "spread")
 
 func shoot_projectile(angle_rad: float, shot_type: String) -> void:
 	total_attempts += 1
 	level_attempts += 1
-	var projectile := PROJECTILE_SCENE.instantiate()
+	var projectile = PROJECTILE_SCENE.instantiate()
 	projectile.global_position = player.get_muzzle_global_position()
 	add_child(projectile)
 	projectile.setup(angle_rad, projectile_speed, shot_type)
@@ -248,7 +248,7 @@ func try_ricochet_shot() -> void:
 	level_attempts += 1
 	ricochet_attempts += 1
 	last_advanced_mechanic = "Ricochet: disparo con reflexión"
-	var projectile := RICOCHET_PROJECTILE_SCENE.instantiate()
+	var projectile = RICOCHET_PROJECTILE_SCENE.instantiate()
 	projectile.global_position = player.get_muzzle_global_position()
 	add_child(projectile)
 	projectile.setup(theta_base_rad, projectile_speed + 40.0, max_bounces)
@@ -265,8 +265,8 @@ func try_homing_shot() -> void:
 	level_attempts += 1
 	homing_attempts += 1
 	last_advanced_mechanic = "Homing: seguimiento angular"
-	var target := get_nearest_target(player.global_position)
-	var projectile := HOMING_PROJECTILE_SCENE.instantiate()
+	var target = get_nearest_target(player.global_position)
+	var projectile = HOMING_PROJECTILE_SCENE.instantiate()
 	projectile.global_position = player.get_muzzle_global_position()
 	add_child(projectile)
 	projectile.setup(theta_base_rad, projectile_speed * 0.80, turn_speed, target)
@@ -317,21 +317,21 @@ func _on_ray_tested(ray_hit: bool, distance: float, target_name: String) -> void
 
 func get_nearest_target(from_pos: Vector2) -> Node2D:
 	var best_target: Node2D = null
-	var best_distance := INF
+	var best_distance = INF
 	for target in get_tree().get_nodes_in_group("targets"):
 		if not is_instance_valid(target) or target.is_dead:
 			continue
-		var d := from_pos.distance_to(target.global_position)
+		var d = from_pos.distance_to(target.global_position)
 		if d < best_distance:
 			best_distance = d
 			best_target = target
 	return best_target
 
 func spawn_one_target() -> void:
-	var target := TARGET_SCENE.instantiate()
-	var y_min := 150.0
-	var y_max := 585.0
-	var pos := Vector2(randf_range(980.0, 1320.0), randf_range(y_min, y_max))
+	var target = TARGET_SCENE.instantiate()
+	var y_min = 150.0
+	var y_max = 585.0
+	var pos = Vector2(randf_range(980.0, 1320.0), randf_range(y_min, y_max))
 	target.position = pos
 	add_child(target)
 	target.setup(current_level, target_speed * randf_range(0.85, 1.18), target_radius, target_hp)
@@ -374,7 +374,7 @@ func sanitize_pattern_params() -> void:
 		delta_theta_deg = max_delta_theta
 		last_cleaning_note = "Dato atípico: Δθ alto corregido a 35°"
 
-	var original_count := projectile_count
+	var original_count = projectile_count
 	projectile_count = clamp(projectile_count, 1, max_projectiles)
 	if projectile_count % 2 == 0:
 		projectile_count += 1
@@ -449,15 +449,15 @@ func get_level_precision() -> float:
 	return float(level_hits) * 100.0 / float(level_attempts)
 
 func get_advanced_hit_rate() -> float:
-	var attempts := ricochet_attempts + homing_attempts + ray_attempts
-	var hits := ricochet_hits + homing_hits + ray_hits
+	var attempts = ricochet_attempts + homing_attempts + ray_attempts
+	var hits = ricochet_hits + homing_hits + ray_hits
 	if attempts <= 0:
 		return 0.0
 	return float(hits) * 100.0 / float(attempts)
 
 func save_runtime_record() -> void:
-	var path := "user://inka_rise_ee3_registro_runtime.csv"
-	var file := FileAccess.open(path, FileAccess.WRITE)
+	var path = "user://inka_rise_ee3_registro_runtime.csv"
+	var file = FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
 		last_cleaning_note = "No se pudo guardar el registro runtime"
 		return
@@ -497,7 +497,7 @@ func _create_hud() -> void:
 	hud_layer.add_child(center_message)
 
 func update_hud() -> void:
-	var cooldown_state := "LISTO" if cooldown_timer <= 0.0 else "RECARGANDO"
+	var cooldown_state = "LISTO" if cooldown_timer <= 0.0 else "RECARGANDO"
 	hud_label.text = "INKARISE EE3 - Combate trigonométrico y vectorial\n"
 	hud_label.text += "Nivel: %d/10 | Objetivo: %d/%d | Vidas: %d | Puntaje: %d\n" % [current_level, level_hits, level_goal_hits, lives, score]
 	hud_label.text += "θ = %.2f° | Dirección = (cos θ, sin θ) | Estado: %s\n" % [theta_base_deg, cooldown_state]
