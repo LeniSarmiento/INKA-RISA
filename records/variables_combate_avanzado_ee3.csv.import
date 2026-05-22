@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://ds34yep0rlav7"
+
+[deps]
+
+files=["res://records/variables_combate_avanzado_ee3.origen.translation", "res://records/variables_combate_avanzado_ee3.formato.translation", "res://records/variables_combate_avanzado_ee3.mecanica.translation", "res://records/variables_combate_avanzado_ee3.descripcion.translation"]
+
+source_file="res://records/variables_combate_avanzado_ee3.csv"
+dest_files=["res://records/variables_combate_avanzado_ee3.origen.translation", "res://records/variables_combate_avanzado_ee3.formato.translation", "res://records/variables_combate_avanzado_ee3.mecanica.translation", "res://records/variables_combate_avanzado_ee3.descripcion.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

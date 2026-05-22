@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bb3wsekqenj5e"
+
+[deps]
+
+files=["res://records/mini_registro_runtime_ee3_ejemplo.theta.translation", "res://records/mini_registro_runtime_ee3_ejemplo.delta.translation", "res://records/mini_registro_runtime_ee3_ejemplo.proyectiles.translation", "res://records/mini_registro_runtime_ee3_ejemplo.velocidad.translation", "res://records/mini_registro_runtime_ee3_ejemplo.cooldown.translation", "res://records/mini_registro_runtime_ee3_ejemplo.max.translation", "res://records/mini_registro_runtime_ee3_ejemplo.ray.translation", "res://records/mini_registro_runtime_ee3_ejemplo.turn.translation", "res://records/mini_registro_runtime_ee3_ejemplo.intentos.translation", "res://records/mini_registro_runtime_ee3_ejemplo.impactos.translation", "res://records/mini_registro_runtime_ee3_ejemplo.fallos.translation", "res://records/mini_registro_runtime_ee3_ejemplo.precision.translation", "res://records/mini_registro_runtime_ee3_ejemplo.ricochet.translation", "res://records/mini_registro_runtime_ee3_ejemplo.ricochet.translation", "res://records/mini_registro_runtime_ee3_ejemplo.ricochet.translation", "res://records/mini_registro_runtime_ee3_ejemplo.ray.translation", "res://records/mini_registro_runtime_ee3_ejemplo.ray.translation", "res://records/mini_registro_runtime_ee3_ejemplo.homing.translation", "res://records/mini_registro_runtime_ee3_ejemplo.homing.translation", "res://records/mini_registro_runtime_ee3_ejemplo.advanced.translation", "res://records/mini_registro_runtime_ee3_ejemplo.nota.translation"]
+
+source_file="res://records/mini_registro_runtime_ee3_ejemplo.csv"
+dest_files=["res://records/mini_registro_runtime_ee3_ejemplo.theta.translation", "res://records/mini_registro_runtime_ee3_ejemplo.delta.translation", "res://records/mini_registro_runtime_ee3_ejemplo.proyectiles.translation", "res://records/mini_registro_runtime_ee3_ejemplo.velocidad.translation", "res://records/mini_registro_runtime_ee3_ejemplo.cooldown.translation", "res://records/mini_registro_runtime_ee3_ejemplo.max.translation", "res://records/mini_registro_runtime_ee3_ejemplo.ray.translation", "res://records/mini_registro_runtime_ee3_ejemplo.turn.translation", "res://records/mini_registro_runtime_ee3_ejemplo.intentos.translation", "res://records/mini_registro_runtime_ee3_ejemplo.impactos.translation", "res://records/mini_registro_runtime_ee3_ejemplo.fallos.translation", "res://records/mini_registro_runtime_ee3_ejemplo.precision.translation", "res://records/mini_registro_runtime_ee3_ejemplo.ricochet.translation", "res://records/mini_registro_runtime_ee3_ejemplo.ricochet.translation", "res://records/mini_registro_runtime_ee3_ejemplo.ricochet.translation", "res://records/mini_registro_runtime_ee3_ejemplo.ray.translation", "res://records/mini_registro_runtime_ee3_ejemplo.ray.translation", "res://records/mini_registro_runtime_ee3_ejemplo.homing.translation", "res://records/mini_registro_runtime_ee3_ejemplo.homing.translation", "res://records/mini_registro_runtime_ee3_ejemplo.advanced.translation", "res://records/mini_registro_runtime_ee3_ejemplo.nota.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

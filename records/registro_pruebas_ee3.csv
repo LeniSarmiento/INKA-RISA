@@ -1,0 +1,7 @@
+caso,mecanica,variable_principal,valor_entrada,resultado_esperado,resultado_obtenido,estado,criterio_limpieza
+1,Ricochet,angulo_entrada,25°,El proyectil rebota en muro vertical y sale en dirección opuesta,Rebote correcto usando normal (-1,0),Correcto,Ninguna corrección
+2,Ricochet,max_bounces,8,El sistema limita rebotes para evitar loop infinito,Valor corregido a 5,Corregido,Valor atípico mayor al máximo permitido
+3,RayCast2D/rayo,ray_distance,680 px,Detecta objetivo frente al jugador,Detecta y aplica daño,Correcto,Ninguna corrección
+4,RayCast2D/rayo,ray_distance,50 px,Evitar alcance demasiado bajo,Valor corregido a 120 px,Corregido,Valor atípico menor al mínimo permitido
+5,Homing/seek,turn_speed,4.2,El proyectil gira progresivamente hacia el objetivo,Sigue al objetivo con giro controlado,Correcto,Ninguna corrección
+6,Homing/seek,turn_speed,-2,Evitar giro inválido o negativo,Valor corregido a 0.2,Corregido,Valor negativo reemplazado por mínimo válido

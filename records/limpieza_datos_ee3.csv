@@ -1,0 +1,8 @@
+variable,valor_original,problema_detectado,valor_corregido,criterio_usado
+max_bounces,8,Valor atípico: generaba demasiados rebotes,5,Límite máximo para estabilidad y claridad
+max_bounces,-1,Valor inválido negativo,1,Límite mínimo para que exista rebote
+ray_distance,50,Alcance demasiado bajo para probar detección,120,Alcance mínimo visible en pantalla
+ray_distance,1200,Alcance excesivo fuera del área jugable,900,Límite máximo para evitar detecciones injustas
+turn_speed,-2,Velocidad angular negativa,0.2,Mínimo válido para corrección angular
+turn_speed,12,Velocidad angular excesiva,7.0,Máximo válido para evitar persecución instantánea
+projectile_count,4,Número par reduce simetría del spread,5,Se ajusta a número impar para mantener centro

@@ -1,0 +1,4 @@
+nivel,theta_base_deg,delta_theta_deg,proyectiles,velocidad,cooldown,max_bounces,ray_distance,turn_speed,intentos_nivel,impactos_nivel,fallos_nivel,precision_nivel,ricochet_intentos,ricochet_hits,ricochet_rebotes,ray_intentos,ray_hits,homing_intentos,homing_hits,advanced_hit_rate,nota_limpieza
+3,18.50,10.4,3,614,0.32,3,674,3.9,14,6,8,42.86,3,2,4,2,1,3,2,55.56,Parámetros válidos
+7,-34.20,13.6,5,686,0.28,3,746,4.5,22,10,12,45.45,5,3,8,3,2,4,3,61.54,Parámetros válidos
+10,42.00,16.0,7,740,0.24,4,780,5.0,28,15,13,53.57,6,4,10,4,3,5,4,68.00,Parámetros válidos

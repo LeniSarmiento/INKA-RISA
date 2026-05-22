@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cta3agaddqhbd"
+
+[deps]
+
+files=["res://records/limpieza_datos_ee3.valor.translation", "res://records/limpieza_datos_ee3.problema.translation", "res://records/limpieza_datos_ee3.valor.translation", "res://records/limpieza_datos_ee3.criterio.translation"]
+
+source_file="res://records/limpieza_datos_ee3.csv"
+dest_files=["res://records/limpieza_datos_ee3.valor.translation", "res://records/limpieza_datos_ee3.problema.translation", "res://records/limpieza_datos_ee3.valor.translation", "res://records/limpieza_datos_ee3.criterio.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

@@ -1,0 +1,19 @@
+variable,origen,formato,mecanica,descripcion
+mouse_position,entrada,vectorial,apuntado,Posición del mouse usada para calcular θ
+theta_base_deg,estado,numérico,apuntado,Ángulo base de disparo en grados
+direction,estado,vectorial,apuntado,Vector construido con cos θ y sin θ
+projectile_speed,parámetro,numérico,disparo,Velocidad del proyectil
+max_bounces,parámetro,numérico,ricochet,Límite máximo de rebotes permitidos
+bounce_count,estado,numérico,ricochet,Cantidad de rebotes realizados
+last_collision_normal,estado,vectorial,ricochet,Normal estimada de la superficie impactada
+angle_after_deg,resultado,numérico,ricochet,Ángulo de salida luego del rebote
+ray_distance,parámetro,numérico,raycast,Alcance máximo del Rayo del Inti
+ray_attempts,estado,numérico,raycast,Cantidad de usos del rayo
+ray_hits,resultado,numérico,raycast,Cantidad de detecciones correctas
+last_ray_result,resultado,categórico,raycast,Mensaje de detección o no detección
+turn_speed,parámetro,numérico,homing,Velocidad de corrección angular del proyectil homing
+current_angle_deg,estado,numérico,homing,Ángulo actual del proyectil perseguidor
+desired_angle_deg,estado,numérico,homing,Ángulo deseado hacia el objetivo
+homing_hits,resultado,numérico,homing,Impactos logrados por el proyectil homing
+advanced_hit_rate,resultado,numérico,métricas,Porcentaje de éxito de las mecánicas avanzadas
+last_cleaning_note,resultado,categórico,limpieza,Descripción del criterio de corrección aplicado

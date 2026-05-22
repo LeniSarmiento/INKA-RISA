@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://ny1d68d0tsvk"
+
+[deps]
+
+files=["res://records/variables_clasificadas.descripcion.translation", "res://records/variables_clasificadas.origen.translation", "res://records/variables_clasificadas.formato.translation", "res://records/variables_clasificadas.ejemplo.translation", "res://records/variables_clasificadas.uso.translation"]
+
+source_file="res://records/variables_clasificadas.csv"
+dest_files=["res://records/variables_clasificadas.descripcion.translation", "res://records/variables_clasificadas.origen.translation", "res://records/variables_clasificadas.formato.translation", "res://records/variables_clasificadas.ejemplo.translation", "res://records/variables_clasificadas.uso.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

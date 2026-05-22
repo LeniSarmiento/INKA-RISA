@@ -4,14 +4,18 @@ const BACKGROUND_SCENE := preload("res://scenes/Background.tscn")
 const PLAYER_SCENE := preload("res://scenes/Player.tscn")
 const PROJECTILE_SCENE := preload("res://scenes/Projectile.tscn")
 const TARGET_SCENE := preload("res://scenes/Target.tscn")
+const RICOCHET_PROJECTILE_SCENE := preload("res://scenes/RicochetProjectile.tscn")
+const HOMING_PROJECTILE_SCENE := preload("res://scenes/HomingProjectile.tscn")
+const LASER_SENSOR_SCENE := preload("res://scenes/LaserSensor.tscn")
+const RICOCHET_WALL_SCENE := preload("res://scenes/RicochetWall.tscn")
 
 var background: Node2D
 var player: Node2D
+var laser_sensor: Node2D
 var hud_layer: CanvasLayer
 var hud_label: Label
 var hud_panel: ColorRect
 var center_message: Label
-var title_card: TextureRect
 var level_banner_timer: float = 2.0
 
 var theta_base_rad: float = 0.0
@@ -44,6 +48,22 @@ var target_radius: float = 36.0
 var target_hp: int = 1
 var game_finished: bool = false
 
+# Parámetros EE3: interacciones avanzadas.
+var max_bounces: int = 3
+var ray_distance: float = 680.0
+var turn_speed: float = 4.2
+var ricochet_attempts: int = 0
+var ricochet_hits: int = 0
+var ricochet_events: int = 0
+var homing_attempts: int = 0
+var homing_hits: int = 0
+var ray_attempts: int = 0
+var ray_hits: int = 0
+var last_collision_normal: Vector2 = Vector2.ZERO
+var last_ray_result: String = "Sin uso"
+var last_homing_info: String = "Sin uso"
+var last_advanced_mechanic: String = "Pendiente de prueba"
+
 var last_cleaning_note: String = "Parámetros válidos"
 var last_runtime_csv_path: String = ""
 
@@ -55,6 +75,11 @@ func _ready() -> void:
 	player = PLAYER_SCENE.instantiate()
 	player.position = Vector2(180, 615)
 	add_child(player)
+
+	laser_sensor = LASER_SENSOR_SCENE.instantiate()
+	add_child(laser_sensor)
+	laser_sensor.setup(player, ray_distance)
+	laser_sensor.ray_tested.connect(_on_ray_tested)
 
 	_create_hud()
 	start_level(1)
@@ -111,6 +136,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_X:
 				projectile_count += 2
 				sanitize_pattern_params()
+			KEY_A:
+				try_ricochet_shot()
+			KEY_S:
+				try_homing_shot()
+			KEY_F:
+				try_laser_ray()
 			KEY_R:
 				reset_all_game()
 			KEY_L:
@@ -128,7 +159,8 @@ func start_level(level: int) -> void:
 	game_finished = false
 	_clear_playfield()
 	configure_difficulty(current_level)
-	center_message.text = "NIVEL %d / 10\nObjetivo: destruye %d fragmentos del Inti" % [current_level, level_goal_hits]
+	setup_ricochet_arena()
+	center_message.text = "NIVEL %d / 10\nEE3: rebote + rayo + homing integrados" % current_level
 	for i in range(min(max_alive_targets, 2 + current_level)):
 		spawn_one_target()
 	update_hud()
@@ -146,17 +178,35 @@ func configure_difficulty(level: int) -> void:
 	if level >= 9:
 		target_hp = 3
 
-	# Parámetros de disparo: se mantienen jugables pero exigen más control en niveles altos.
 	projectile_speed = 560.0 + float(level) * 18.0
 	cooldown = max(0.20, 0.36 - float(level) * 0.012)
 	delta_theta_deg = clamp(8.0 + float(level) * 0.8, 8.0, 18.0)
 	projectile_count = 3 if level < 4 else 5
 	if level >= 8:
 		projectile_count = 7
+
+	# Parámetros avanzados para EE3.
+	max_bounces = clamp(2 + int(level / 4), 3, 5)
+	ray_distance = clamp(620.0 + float(level) * 18.0, 620.0, 780.0)
+	turn_speed = clamp(3.4 + float(level) * 0.16, 3.4, 5.2)
+	if is_instance_valid(laser_sensor):
+		laser_sensor.ray_distance = ray_distance
 	sanitize_pattern_params()
+	sanitize_advanced_params()
+
+func setup_ricochet_arena() -> void:
+	# Tres superficies con ángulos/posiciones diferentes para probar el ricochet.
+	_create_wall(Vector2(680, 450), Vector2(26, 210), "Muro vertical")
+	_create_wall(Vector2(920, 255), Vector2(240, 24), "Muro horizontal")
+	_create_wall(Vector2(1060, 520), Vector2(28, 170), "Muro final")
+
+func _create_wall(pos: Vector2, size: Vector2, label: String) -> void:
+	var wall := RICOCHET_WALL_SCENE.instantiate()
+	wall.position = pos
+	add_child(wall)
+	wall.setup(size, label)
 
 func advance_level_for_demo() -> void:
-	# Tecla auxiliar para grabar el video demo o probar rápido los 10 niveles.
 	if current_level < max_level:
 		start_level(current_level + 1)
 	else:
@@ -189,14 +239,93 @@ func shoot_projectile(angle_rad: float, shot_type: String) -> void:
 	projectile.setup(angle_rad, projectile_speed, shot_type)
 	projectile.projectile_finished.connect(_on_projectile_finished)
 
+func try_ricochet_shot() -> void:
+	if cooldown_timer > 0.0:
+		return
+	cooldown_timer = cooldown
+	sanitize_advanced_params()
+	total_attempts += 1
+	level_attempts += 1
+	ricochet_attempts += 1
+	last_advanced_mechanic = "Ricochet: disparo con reflexión"
+	var projectile := RICOCHET_PROJECTILE_SCENE.instantiate()
+	projectile.global_position = player.get_muzzle_global_position()
+	add_child(projectile)
+	projectile.setup(theta_base_rad, projectile_speed + 40.0, max_bounces)
+	projectile.projectile_finished.connect(_on_advanced_projectile_finished)
+	projectile.ricochet_event.connect(_on_ricochet_event)
+	update_hud()
+
+func try_homing_shot() -> void:
+	if cooldown_timer > 0.0:
+		return
+	cooldown_timer = cooldown
+	sanitize_advanced_params()
+	total_attempts += 1
+	level_attempts += 1
+	homing_attempts += 1
+	last_advanced_mechanic = "Homing: seguimiento angular"
+	var target := get_nearest_target(player.global_position)
+	var projectile := HOMING_PROJECTILE_SCENE.instantiate()
+	projectile.global_position = player.get_muzzle_global_position()
+	add_child(projectile)
+	projectile.setup(theta_base_rad, projectile_speed * 0.80, turn_speed, target)
+	projectile.projectile_finished.connect(_on_advanced_projectile_finished)
+	projectile.homing_update.connect(_on_homing_update)
+	update_hud()
+
+func try_laser_ray() -> void:
+	sanitize_advanced_params()
+	ray_attempts += 1
+	last_advanced_mechanic = "RayCast2D/equivalente: Rayo del Inti"
+	laser_sensor.fire_pulse()
+	update_hud()
+
 func _on_projectile_finished(was_hit: bool, angle_deg: float, shot_type: String) -> void:
+	if not was_hit:
+		total_misses += 1
+		level_misses += 1
+	update_hud()
+
+func _on_advanced_projectile_finished(was_hit: bool, angle_deg: float, shot_type: String) -> void:
 	if was_hit:
-		# El conteo de impacto final se hace cuando el objetivo queda destruido.
-		pass
+		if shot_type == "ricochet":
+			ricochet_hits += 1
+		elif shot_type == "homing":
+			homing_hits += 1
 	else:
 		total_misses += 1
 		level_misses += 1
 	update_hud()
+
+func _on_ricochet_event(bounce_count: int, normal: Vector2, angle_after_deg: float) -> void:
+	ricochet_events += 1
+	last_collision_normal = normal
+	last_advanced_mechanic = "Ricochet: rebote %d | normal=(%.0f, %.0f) | salida=%.1f°" % [bounce_count, normal.x, normal.y, angle_after_deg]
+	update_hud()
+
+func _on_homing_update(angle_deg: float, desired_angle_deg: float, p_turn_speed: float) -> void:
+	last_homing_info = "actual %.1f° → objetivo %.1f° | turn_speed %.1f" % [angle_deg, desired_angle_deg, p_turn_speed]
+
+func _on_ray_tested(ray_hit: bool, distance: float, target_name: String) -> void:
+	if ray_hit:
+		ray_hits += 1
+		last_ray_result = "Detectó objetivo a %.0f px" % distance
+	else:
+		last_ray_result = "Sin impacto | alcance %.0f px" % ray_distance
+	update_hud()
+
+func get_nearest_target(from_pos: Vector2) -> Node2D:
+	var best_target: Node2D = null
+	var best_distance := INF
+	for target in get_tree().get_nodes_in_group("targets"):
+		if not is_instance_valid(target) or target.is_dead:
+			continue
+		var d := from_pos.distance_to(target.global_position)
+		if d < best_distance:
+			best_distance = d
+			best_target = target
+	return best_target
 
 func spawn_one_target() -> void:
 	var target := TARGET_SCENE.instantiate()
@@ -254,21 +383,51 @@ func sanitize_pattern_params() -> void:
 	if projectile_count != original_count:
 		last_cleaning_note += " | Proyectiles ajustados a número impar entre 1 y 9"
 
+func sanitize_advanced_params() -> void:
+	if max_bounces < 1:
+		max_bounces = 1
+		last_cleaning_note = "Rebotes negativos/faltantes corregidos a 1"
+	elif max_bounces > 5:
+		max_bounces = 5
+		last_cleaning_note = "Rebotes atípicos corregidos al máximo 5"
+	if ray_distance < 120.0:
+		ray_distance = 120.0
+		last_cleaning_note = "Alcance del rayo bajo corregido a 120 px"
+	elif ray_distance > 900.0:
+		ray_distance = 900.0
+		last_cleaning_note = "Alcance del rayo alto corregido a 900 px"
+	if turn_speed < 0.2:
+		turn_speed = 0.2
+		last_cleaning_note = "turn_speed faltante/negativo corregido a 0.2"
+	elif turn_speed > 7.0:
+		turn_speed = 7.0
+		last_cleaning_note = "turn_speed atípico corregido a 7.0"
+
 func reset_all_game() -> void:
 	total_attempts = 0
 	total_hits = 0
 	total_misses = 0
+	ricochet_attempts = 0
+	ricochet_hits = 0
+	ricochet_events = 0
+	homing_attempts = 0
+	homing_hits = 0
+	ray_attempts = 0
+	ray_hits = 0
 	score = 0
 	lives = 5
 	last_cleaning_note = "Juego reiniciado"
 	last_runtime_csv_path = ""
+	last_ray_result = "Sin uso"
+	last_homing_info = "Sin uso"
+	last_advanced_mechanic = "Pendiente de prueba"
 	start_level(1)
 
 func finish_game() -> void:
 	game_finished = true
 	_clear_playfield()
 	center_message.visible = true
-	center_message.text = "¡GANASTE INKARISE!\nCompletaste los 10 niveles\nPrecisión total: %.1f%%\nPresiona R para reiniciar" % get_total_precision()
+	center_message.text = "¡GANASTE INKARISE EE3!\nCompletaste los 10 niveles\nPrecisión total: %.1f%%\nPresiona R para reiniciar" % get_total_precision()
 	update_hud()
 
 func _clear_playfield() -> void:
@@ -276,6 +435,8 @@ func _clear_playfield() -> void:
 		projectile.queue_free()
 	for target in get_tree().get_nodes_in_group("targets"):
 		target.queue_free()
+	for wall in get_tree().get_nodes_in_group("ricochet_walls"):
+		wall.queue_free()
 
 func get_total_precision() -> float:
 	if total_attempts <= 0:
@@ -287,17 +448,24 @@ func get_level_precision() -> float:
 		return 0.0
 	return float(level_hits) * 100.0 / float(level_attempts)
 
+func get_advanced_hit_rate() -> float:
+	var attempts := ricochet_attempts + homing_attempts + ray_attempts
+	var hits := ricochet_hits + homing_hits + ray_hits
+	if attempts <= 0:
+		return 0.0
+	return float(hits) * 100.0 / float(attempts)
+
 func save_runtime_record() -> void:
-	var path := "user://inka_rise_registro_runtime.csv"
+	var path := "user://inka_rise_ee3_registro_runtime.csv"
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
 		last_cleaning_note = "No se pudo guardar el registro runtime"
 		return
-	file.store_line("nivel,theta_base_deg,delta_theta_deg,cantidad_proyectiles,velocidad,cooldown,intentos_nivel,impactos_nivel,fallos_nivel,precision_nivel,intentos_totales,impactos_totales,precision_total,nota_limpieza")
-	file.store_line("%d,%.2f,%.2f,%d,%.2f,%.2f,%d,%d,%d,%.2f,%d,%d,%.2f,%s" % [current_level, theta_base_deg, delta_theta_deg, projectile_count, projectile_speed, cooldown, level_attempts, level_hits, level_misses, get_level_precision(), total_attempts, total_hits, get_total_precision(), last_cleaning_note])
+	file.store_line("nivel,theta_base_deg,delta_theta_deg,proyectiles,velocidad,cooldown,max_bounces,ray_distance,turn_speed,intentos_nivel,impactos_nivel,fallos_nivel,precision_nivel,ricochet_intentos,ricochet_hits,ricochet_rebotes,ray_intentos,ray_hits,homing_intentos,homing_hits,advanced_hit_rate,nota_limpieza")
+	file.store_line("%d,%.2f,%.2f,%d,%.2f,%.2f,%d,%.2f,%.2f,%d,%d,%d,%.2f,%d,%d,%d,%d,%d,%d,%d,%.2f,%s" % [current_level, theta_base_deg, delta_theta_deg, projectile_count, projectile_speed, cooldown, max_bounces, ray_distance, turn_speed, level_attempts, level_hits, level_misses, get_level_precision(), ricochet_attempts, ricochet_hits, ricochet_events, ray_attempts, ray_hits, homing_attempts, homing_hits, get_advanced_hit_rate(), last_cleaning_note])
 	file.close()
 	last_runtime_csv_path = ProjectSettings.globalize_path(path)
-	last_cleaning_note = "Registro guardado en user://inka_rise_registro_runtime.csv"
+	last_cleaning_note = "Registro EE3 guardado en user://inka_rise_ee3_registro_runtime.csv"
 
 func _create_hud() -> void:
 	hud_layer = CanvasLayer.new()
@@ -305,14 +473,14 @@ func _create_hud() -> void:
 
 	hud_panel = ColorRect.new()
 	hud_panel.position = Vector2(12, 12)
-	hud_panel.size = Vector2(735, 236)
-	hud_panel.color = Color(0.025, 0.02, 0.018, 0.72)
+	hud_panel.size = Vector2(835, 318)
+	hud_panel.color = Color(0.025, 0.02, 0.018, 0.74)
 	hud_layer.add_child(hud_panel)
 
 	hud_label = Label.new()
 	hud_label.position = Vector2(26, 22)
-	hud_label.size = Vector2(705, 224)
-	hud_label.add_theme_font_size_override("font_size", 16)
+	hud_label.size = Vector2(805, 306)
+	hud_label.add_theme_font_size_override("font_size", 15)
 	hud_label.add_theme_color_override("font_color", Color(1.0, 0.94, 0.76))
 	hud_layer.add_child(hud_label)
 
@@ -330,13 +498,16 @@ func _create_hud() -> void:
 
 func update_hud() -> void:
 	var cooldown_state := "LISTO" if cooldown_timer <= 0.0 else "RECARGANDO"
-	hud_label.text = "INKARISE v3 - Disparo trigonométrico + niveles 1 al 10\n"
+	hud_label.text = "INKARISE EE3 - Combate trigonométrico y vectorial\n"
 	hud_label.text += "Nivel: %d/10 | Objetivo: %d/%d | Vidas: %d | Puntaje: %d\n" % [current_level, level_hits, level_goal_hits, lives, score]
 	hud_label.text += "θ = %.2f° | Dirección = (cos θ, sin θ) | Estado: %s\n" % [theta_base_deg, cooldown_state]
-	hud_label.text += "Controles: Click izq = disparo | Click der = spread | Q/E Δθ | Z/X proyectiles | N nivel demo\n"
-	hud_label.text += "Patrón: Δθ = %.1f° | Proyectiles = %d | Velocidad = %.0f px/s | Cooldown = %.2fs\n" % [delta_theta_deg, projectile_count, projectile_speed, cooldown]
-	hud_label.text += "Métricas nivel: Intentos = %d | Impactos = %d | Fallos = %d | Precisión = %.1f%%\n" % [level_attempts, level_hits, level_misses, get_level_precision()]
-	hud_label.text += "Métricas total: Intentos = %d | Impactos = %d | Precisión = %.1f%%\n" % [total_attempts, total_hits, get_total_precision()]
+	hud_label.text += "Controles: Click izq simple | Click der spread | A ricochet | F rayo | S homing | Q/E Δθ | N nivel\n"
+	hud_label.text += "EE2 base: Δθ=%.1f° | Proyectiles=%d | Velocidad=%.0f px/s | Cooldown=%.2fs\n" % [delta_theta_deg, projectile_count, projectile_speed, cooldown]
+	hud_label.text += "EE3: Rebotes máx=%d | Normal=(%.0f, %.0f) | Rayo=%.0f px | turn_speed=%.1f\n" % [max_bounces, last_collision_normal.x, last_collision_normal.y, ray_distance, turn_speed]
+	hud_label.text += "Ricochet: intentos=%d hits=%d rebotes=%d | RayCast: intentos=%d hits=%d | Homing: intentos=%d hits=%d\n" % [ricochet_attempts, ricochet_hits, ricochet_events, ray_attempts, ray_hits, homing_attempts, homing_hits]
+	hud_label.text += "RayCast: %s | Homing: %s\n" % [last_ray_result, last_homing_info]
+	hud_label.text += "Métricas nivel: Intentos=%d | Impactos=%d | Fallos=%d | Precisión=%.1f%% | Hit rate avanzado=%.1f%%\n" % [level_attempts, level_hits, level_misses, get_level_precision(), get_advanced_hit_rate()]
+	hud_label.text += "Última mecánica: %s\n" % last_advanced_mechanic
 	hud_label.text += "Limpieza de datos: %s" % last_cleaning_note
 	if last_runtime_csv_path != "":
 		hud_label.text += "\nCSV runtime: " + last_runtime_csv_path

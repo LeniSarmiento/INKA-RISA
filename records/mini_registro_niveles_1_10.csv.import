@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://br6orjqaaitjv"
+
+[deps]
+
+files=["res://records/mini_registro_niveles_1_10.theta.translation", "res://records/mini_registro_niveles_1_10.delta.translation", "res://records/mini_registro_niveles_1_10.cantidad.translation", "res://records/mini_registro_niveles_1_10.velocidad.translation", "res://records/mini_registro_niveles_1_10.cooldown.translation", "res://records/mini_registro_niveles_1_10.intentos.translation", "res://records/mini_registro_niveles_1_10.impactos.translation", "res://records/mini_registro_niveles_1_10.fallos.translation", "res://records/mini_registro_niveles_1_10.precision.translation", "res://records/mini_registro_niveles_1_10.clasificacion.translation", "res://records/mini_registro_niveles_1_10.formato.translation", "res://records/mini_registro_niveles_1_10.limpieza.translation", "res://records/mini_registro_niveles_1_10.interpretacion.translation"]
+
+source_file="res://records/mini_registro_niveles_1_10.csv"
+dest_files=["res://records/mini_registro_niveles_1_10.theta.translation", "res://records/mini_registro_niveles_1_10.delta.translation", "res://records/mini_registro_niveles_1_10.cantidad.translation", "res://records/mini_registro_niveles_1_10.velocidad.translation", "res://records/mini_registro_niveles_1_10.cooldown.translation", "res://records/mini_registro_niveles_1_10.intentos.translation", "res://records/mini_registro_niveles_1_10.impactos.translation", "res://records/mini_registro_niveles_1_10.fallos.translation", "res://records/mini_registro_niveles_1_10.precision.translation", "res://records/mini_registro_niveles_1_10.clasificacion.translation", "res://records/mini_registro_niveles_1_10.formato.translation", "res://records/mini_registro_niveles_1_10.limpieza.translation", "res://records/mini_registro_niveles_1_10.interpretacion.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

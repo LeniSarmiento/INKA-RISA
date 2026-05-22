@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://28uvd6lbqrjq"
+
+[deps]
+
+files=["res://records/registro_pruebas_ee3.mecanica.translation", "res://records/registro_pruebas_ee3.variable.translation", "res://records/registro_pruebas_ee3.valor.translation", "res://records/registro_pruebas_ee3.resultado.translation", "res://records/registro_pruebas_ee3.resultado.translation", "res://records/registro_pruebas_ee3.estado.translation", "res://records/registro_pruebas_ee3.criterio.translation"]
+
+source_file="res://records/registro_pruebas_ee3.csv"
+dest_files=["res://records/registro_pruebas_ee3.mecanica.translation", "res://records/registro_pruebas_ee3.variable.translation", "res://records/registro_pruebas_ee3.valor.translation", "res://records/registro_pruebas_ee3.resultado.translation", "res://records/registro_pruebas_ee3.resultado.translation", "res://records/registro_pruebas_ee3.estado.translation", "res://records/registro_pruebas_ee3.criterio.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

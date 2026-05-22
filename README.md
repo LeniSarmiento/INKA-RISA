@@ -1,123 +1,185 @@
-# InkaRise v3 - Prototype Trigonométrico con niveles 1 al 10
+# InkaRise EE3 - Prototype Trigonométrico v3
 
-## Descripción
-**InkaRise** es un prototipo 2D hecho en Godot donde el jugador controla a un guerrero inca que usa la Energía del Inti para disparar proyectiles. Esta versión mejora el proyecto con:
+**Grupo 4**
 
-- Personaje visual integrado desde la lámina de referencia del guerrero inca.
-- Fondo 2D estilo videojuego/plataforma.
-- Sistema de disparo con ángulo **θ**.
-- Proyectil calculado con **cos(θ)** y **sin(θ)**.
-- Patrón angular tipo **spread** controlado por **Δθ**.
-- Sistema de niveles del **1 al 10**, aumentando la dificultad.
-- HUD con variables, métricas y precisión.
-- Registro CSV para evidenciar pruebas y limpieza de datos.
+Integrante registrado:
+- Lenin David Mamani Sarmiento
+
+> Proyecto en Godot 4.x basado en InkaRise, un juego 2D con estética andina donde el guerrero inca usa la Energía del Inti. Esta versión EE3 integra interacciones avanzadas con trigonometría y vectores.
+
+---
+
+## Objetivo del prototipo
+
+Desarrollar una tercera versión jugable de InkaRise donde se apliquen conceptos trigonométricos y vectoriales para resolver un sistema de combate avanzado. El prototipo conserva el disparo angular de la EE2 y agrega tres mecánicas nuevas: rebote/ricochet, detección por rayo y homing/seek.
+
+---
+
+## Estructura del proyecto
+
+```text
+InkaRise_EE3_Interacciones_Avanzadas_Godot/
+├─ assets/
+│  └─ images/
+├─ scenes/
+│  ├─ Main.tscn
+│  ├─ Player.tscn
+│  ├─ Projectile.tscn
+│  ├─ Target.tscn
+│  ├─ RicochetProjectile.tscn
+│  ├─ RicochetWall.tscn
+│  ├─ LaserSensor.tscn
+│  └─ HomingProjectile.tscn
+├─ scripts/
+│  ├─ Main.gd
+│  ├─ Player.gd
+│  ├─ Projectile.gd
+│  ├─ Target.gd
+│  ├─ Background.gd
+│  ├─ RicochetProjectile.gd
+│  ├─ RicochetWall.gd
+│  ├─ LaserSensor.gd
+│  └─ HomingProjectile.gd
+├─ docs/
+├─ records/
+└─ project.godot
+```
+
+---
 
 ## Controles
 
-| Acción | Control |
+| Tecla / acción | Función |
 |---|---|
-| Apuntar | Mover el mouse |
-| Disparo simple | Click izquierdo |
-| Disparo en patrón angular / spread | Click derecho |
-| Disminuir Δθ | Q |
-| Aumentar Δθ | E |
-| Disminuir cantidad de proyectiles | Z |
-| Aumentar cantidad de proyectiles | X |
-| Guardar registro CSV en tiempo real | L |
-| Reiniciar juego | R |
-| Pasar de nivel para demo rápida | N |
+| Mouse | Apuntar con el ángulo θ |
+| Click izquierdo | Disparo simple |
+| Click derecho | Disparo spread con Δθ |
+| A | Disparo ricochet/rebote |
+| F | Rayo del Inti / RayCast2D equivalente |
+| S | Disparo homing/seek |
+| Q / E | Disminuir / aumentar Δθ |
+| Z / X | Disminuir / aumentar cantidad de proyectiles |
+| N | Avanzar nivel para demo |
+| L | Guardar registro CSV runtime |
+| R | Reiniciar juego |
 
-## Mecánica trigonométrica aplicada
+---
 
-El ángulo base **θ** se obtiene según la dirección entre la posición del jugador y la posición del mouse.
+## Mecánicas implementadas para EE3
 
-```text
-dirección = mouse - jugador
-θ = dirección.angle()
+### Mecánica A: Reflexión / Ricochet controlado
+
+Se agregó un proyectil especial que rebota cuando colisiona con muros incas. El rebote utiliza la normal de la superficie:
+
+```gdscript
+velocity = velocity.bounce(normal)
 ```
 
-Luego el proyectil se mueve usando componentes trigonométricas:
+Variables principales:
+- `max_bounces`: cantidad máxima de rebotes.
+- `bounce_count`: número de rebotes realizados.
+- `last_collision_normal`: normal detectada en la colisión.
+- `angle_after_deg`: ángulo de salida después del rebote.
 
-```text
-Δx = cos(θ) * velocidad
-Δy = sin(θ) * velocidad
+Cómo probar:
+1. Apunta hacia uno de los muros dorados.
+2. Presiona `A`.
+3. Observa cómo el proyectil cambia de dirección y el HUD muestra la normal.
+
+---
+
+### Mecánica B: Detección por rayo / RayCast2D equivalente
+
+Se agregó el **Rayo del Inti**, que detecta objetivos en línea recta desde el jugador. La escena `LaserSensor.tscn` contiene un nodo `RayCast2D` como referencia visual/técnica, y el script calcula la intersección con objetivos usando distancia punto-segmento.
+
+Variables principales:
+- `ray_distance`: alcance del rayo.
+- `ray_attempts`: cantidad de usos del rayo.
+- `ray_hits`: detecciones correctas.
+- `last_ray_result`: resultado mostrado en el HUD.
+
+Cómo probar:
+1. Apunta a un fragmento del Inti/enemigo.
+2. Presiona `F`.
+3. El rayo se activa y, si detecta el objetivo, aplica daño y registra el hit.
+
+---
+
+### Mecánica C: Direccionamiento hacia objetivo / Homing
+
+Se agregó un proyectil que corrige su dirección hacia el objetivo más cercano. Usa interpolación angular con `lerp_angle` y un parámetro `turn_speed`.
+
+```gdscript
+new_angle = lerp_angle(current_angle, desired_angle, turn_speed * delta)
 ```
 
-Para el patrón angular, se generan varios proyectiles alrededor del ángulo base:
+Variables principales:
+- `turn_speed`: velocidad de corrección angular.
+- `desired_angle_deg`: ángulo hacia el objetivo.
+- `current_angle_deg`: ángulo actual del proyectil.
+- `homing_hits`: impactos conseguidos con homing.
 
-```text
-ángulo_proyectil = θ + offset * Δθ
-```
+Cómo probar:
+1. Apunta cerca de un objetivo, no necesariamente directo.
+2. Presiona `S`.
+3. El proyectil ajusta su trayectoria hacia el objetivo.
 
-De esta manera, el disparo no depende de una dirección fija, sino de una regla matemática controlable.
+---
 
-## Niveles del 1 al 10
+## Parámetros clave
 
-Cada nivel aumenta la dificultad mediante cuatro factores principales:
-
-| Nivel | Cambios principales |
+| Parámetro | Uso |
 |---|---|
-| 1-3 | Objetivos grandes, lentos y con poca cantidad en pantalla. |
-| 4-5 | Aumenta la cantidad de proyectiles del spread y la velocidad de los objetivos. |
-| 6-8 | Los objetivos tienen más vida, son más pequeños y aparecen más rápido. |
-| 9-10 | Máxima dificultad: objetivos rápidos, resistentes y menor margen de precisión. |
+| `theta_base_deg` | Ángulo base de apuntado |
+| `delta_theta_deg` | Separación angular del spread |
+| `projectile_speed` | Velocidad de proyectiles |
+| `max_bounces` | Límite de rebotes del ricochet |
+| `ray_distance` | Alcance del rayo |
+| `turn_speed` | Velocidad de giro del homing |
+| `hit_rate` | Porcentaje de acierto avanzado |
 
-## Variables y métricas del sistema
+---
 
-| Variable | Origen | Formato | Uso |
-|---|---|---|---|
-| θ | Entrada/estado | Numérico | Define la dirección del disparo. |
-| Δθ | Parámetro | Numérico | Controla la separación angular del spread. |
-| cantidad_proyectiles | Parámetro | Numérico | Define cuántos proyectiles salen en el patrón. |
-| velocidad_proyectil | Parámetro | Numérico | Controla el desplazamiento del proyectil. |
-| cooldown | Parámetro | Numérico | Tiempo de espera entre disparos. |
-| nivel | Estado | Numérico | Indica la dificultad actual. |
-| intentos | Resultado | Numérico | Cantidad de disparos realizados. |
-| impactos | Resultado | Numérico | Objetivos destruidos. |
-| precisión | Resultado | Numérico | Porcentaje de acierto. |
+## Evidencia incluida
 
-## Limpieza de datos implementada
+- `docs/nota_tecnica_ee3.md`: explicación matemática de dirección, rebote, rayo y homing.
+- `docs/guion_video_demo_ee3.md`: guía para grabar el video demo de 60 a 90 segundos.
+- `docs/texto_exposicion_ee3.md`: texto para explicar el proyecto.
+- `records/registro_pruebas_ee3.csv`: 6 casos de prueba, 2 por mecánica.
+- `records/variables_combate_avanzado_ee3.csv`: clasificación de variables por origen y formato.
+- `records/limpieza_datos_ee3.csv`: evidencia antes/después de corrección de valores atípicos.
 
-El juego corrige valores inconsistentes del patrón angular:
+---
 
-- Si **Δθ** está vacío o no es válido, se reemplaza por un valor seguro.
-- Si **Δθ** es negativo, se corrige a 0°.
-- Si **Δθ** supera el máximo, se limita a 35°.
-- La cantidad de proyectiles se mantiene impar para que el patrón tenga un proyectil central.
-- La cantidad de proyectiles se limita entre 1 y 9.
+## Cómo abrir el proyecto
 
-## Archivos principales
+1. Descomprimir la carpeta.
+2. Abrir Godot 4.x.
+3. Seleccionar **Importar**.
+4. Elegir `project.godot`.
+5. Ejecutar con `F5`.
 
-```text
-assets/images/          Imágenes del personaje y fondos.
-scenes/Main.tscn        Escena principal.
-scenes/Player.tscn      Escena del jugador.
-scenes/Projectile.tscn  Escena del proyectil.
-scenes/Target.tscn      Escena de los objetivos.
-scripts/Main.gd         Lógica de niveles, métricas, disparo y HUD.
-scripts/Player.gd       Personaje, apuntado y visualización.
-scripts/Projectile.gd   Movimiento trigonométrico del proyectil.
-scripts/Target.gd       Objetivos, vida, velocidad y dificultad.
-records/                Mini-registro de datos.
-docs/                   Nota técnica y texto de exposición.
-```
+---
 
-## Cómo abrir en Godot
+## Cómo exportar build
 
-1. Descomprime el ZIP.
-2. Abre Godot.
-3. Selecciona **Importar**.
-4. Elige la carpeta `InkaRise_v3_Niveles_Godot`.
-5. Abre el archivo `project.godot`.
-6. Ejecuta con **F5**.
+1. Ir a **Project > Export**.
+2. Seleccionar Windows o Web.
+3. Instalar plantillas de exportación si Godot lo solicita.
+4. Exportar el ejecutable o versión web.
 
-## Recomendación para el video demo
+---
 
-Mostrar en 45 a 60 segundos:
+## Resumen de cumplimiento EE3
 
-1. El personaje y la visualización mejorada.
-2. Apuntado hacia distintas direcciones.
-3. Disparo simple en varios ángulos.
-4. Disparo spread con Δθ.
-5. Cambio de dificultad entre niveles usando la tecla N.
-6. HUD con métricas de intentos, impactos y precisión.
+| Requisito | Estado |
+|---|---|
+| Ricochet con normal/reflexión | Implementado |
+| RayCast2D o equivalente | Implementado |
+| Homing/seek con turn_speed | Implementado |
+| Integración en una escena jugable | Implementado |
+| Registro de 6 pruebas | Incluido |
+| Variables clasificadas | Incluido |
+| Limpieza de datos | Incluido |
+| Nota técnica 15-20 líneas | Incluida |
+| Guion para video 60-90 s | Incluido |
