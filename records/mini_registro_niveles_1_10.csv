@@ -1,0 +1,11 @@
+nivel,theta_base_deg,delta_theta_deg,cantidad_proyectiles,velocidad_proyectil,cooldown,intentos,impactos,fallos,precision,clasificacion_origen,formato,limpieza_aplicada,interpretacion
+1,15,8.8,3,578,0.35,8,6,2,75.0,"θ entrada/estado; Δθ parámetro; impactos resultado",numérico,"Sin corrección","Nivel inicial claro; objetivos grandes y lentos"
+2,22,9.6,3,596,0.34,10,7,3,70.0,"θ entrada/estado; Δθ parámetro; impactos resultado",numérico,"Sin corrección","Aumenta la velocidad, pero el jugador mantiene buen control"
+3,30,10.4,3,614,0.32,12,8,4,66.7,"θ entrada/estado; Δθ parámetro; impactos resultado",numérico,"Sin corrección","Mayor movimiento vertical de objetivos"
+4,38,11.2,5,632,0.31,15,9,6,60.0,"cantidad_proyectiles parámetro; precisión resultado",numérico,"Cantidad impar validada","Spread ayuda, pero exige mejor apuntado"
+5,45,12.0,5,650,0.30,17,10,7,58.8,"cooldown parámetro; fallos resultado",numérico,"Sin corrección","Dificultad media con objetivos más rápidos"
+6,53,12.8,5,668,0.29,21,11,10,52.4,"vida_objetivo estado; impactos resultado",numérico,"Sin corrección","Objetivos con 2 puntos de vida reducen precisión"
+7,60,13.6,5,686,0.28,24,12,12,50.0,"velocidad parámetro; nivel estado",numérico,"Sin corrección","Se necesita controlar mejor el tiempo de disparo"
+8,68,14.4,7,704,0.26,28,13,15,46.4,"Δθ parámetro; cantidad_proyectiles parámetro",numérico,"Cantidad impar validada","Más proyectiles, pero objetivos pequeños"
+9,75,15.2,7,722,0.25,34,14,20,41.2,"vida_objetivo estado; precisión resultado",numérico,"Sin corrección","Nivel avanzado con enemigos resistentes"
+10,82,16.0,7,740,0.24,39,15,24,38.5,"nivel estado; precisión resultado",numérico,"Δθ limitado dentro del rango permitido","Máxima dificultad; requiere precisión y buen uso del spread"

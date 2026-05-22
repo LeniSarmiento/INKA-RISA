@@ -1,0 +1,26 @@
+; Engine configuration file.
+; InkaRise v3 - Prototype Trigonometrico con niveles 1 al 10.
+
+config_version=5
+
+[application]
+config/name="InkaRise v3 - Patron Angular"
+run/main_scene="res://scenes/Main.tscn"
+config/features=PackedStringArray("4.2")
+config/icon="res://icon.svg"
+
+[display]
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[input]
+shoot_simple={
+"deadzone": 0.5,
+"events": []
+}
+shoot_spread={
+"deadzone": 0.5,
+"events": []
+}

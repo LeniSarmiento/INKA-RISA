@@ -1,0 +1,11 @@
+variable,descripcion,origen,formato,ejemplo,uso_en_el_juego
+θ,Ángulo base de apuntado,entrada/estado,numérico,45 grados,Define dirección del disparo
+Δθ,Separación angular del patrón spread,parámetro,numérico,12 grados,Controla apertura del abanico de proyectiles
+cantidad_proyectiles,Número de proyectiles por spread,parámetro,numérico,5,Define cantidad de disparos simultáneos
+velocidad_proyectil,Velocidad del proyectil,parámetro,numérico,650 px/s,Controla desplazamiento por segundo
+cooldown,Tiempo de espera entre disparos,parámetro,numérico,0.30 s,Balancea dificultad y ritmo
+nivel,Nivel actual del juego,estado,numérico,6,Define dificultad progresiva
+vida_objetivo,Resistencia del fragmento enemigo,estado,numérico,2,Aumenta dificultad desde nivel 6
+intentos,Disparos realizados,resultado,numérico,21,Permite calcular precisión
+impactos,Objetivos destruidos,resultado,numérico,11,Indica eficacia del jugador
+precisión,Porcentaje de acierto,resultado,numérico,52.4%,Métrica principal de desempeño
