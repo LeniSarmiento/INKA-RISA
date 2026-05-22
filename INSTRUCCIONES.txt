@@ -1,0 +1,16 @@
+Para instalar el menú en tu proyecto actual:
+
+1. Copia assets/images/menu_background_inka.png a tu carpeta assets/images/.
+2. Copia scenes/MainMenu.tscn a tu carpeta scenes/.
+3. Copia scripts/MainMenu.gd a tu carpeta scripts/.
+4. Reemplaza project.godot por el de patched_root/project.godot para que el juego inicie en el menú.
+5. Reemplaza scripts/Main.gd por patched_scripts/Main.gd si quieres que ESC vuelva al menú desde la partida.
+
+Botones:
+- INICIAR: abre Main.tscn.
+- LOGROS: muestra/oculta el panel de logros.
+
+Teclas:
+- Enter: iniciar.
+- L: logros.
+- ESC: cerrar logros o volver al menú desde la partida.
