@@ -1,7 +1,22 @@
-# Intro del juego - InkaRise EE3
+# Intro / Menú inicial EE3
 
-Se agregó una escena de inicio para que el prototipo no abra directamente en la partida. Esta pantalla presenta el título **Inka Rise**, un fondo relacionado con la cultura inca y dos botones principales: **Iniciar** y **Logros**.
+El menú inicial fue rediseñado con una interfaz inspirada en la cultura inca y en la Energía del Inti.
 
-El botón **Iniciar** lleva al jugador a la escena principal donde se prueban las mecánicas de la Evidencia 3: ricochet, RayCast/Rayo del Inti y homing. El botón **Logros** muestra objetivos relacionados con las mecánicas implementadas, por ejemplo probar el rebote con la tecla A, activar el rayo con F y lanzar el proyectil perseguidor con S.
+## Elementos implementados
 
-Esta mejora ayuda a que el juego tenga una presentación más completa, clara y cercana a un videojuego real, manteniendo la temática de InkaRise basada en la cultura inca, montañas andinas y la Energía del Inti.
+- Fondo `assets/images/banner_run.jpg` con estética andina.
+- Panel principal con título **INKA RISE**.
+- Botón **INICIAR** para entrar a la escena principal del juego.
+- Botón **INSTRUCCIONES** para mostrar u ocultar las mecánicas EE3.
+- Panel lateral con las tres mecánicas avanzadas:
+  - **A**: Rebote Andino / ricochet.
+  - **F**: Rayo del Inti / detección por rayo.
+  - **S**: Espíritu Guía / proyectil homing.
+- Indicaciones de niveles, HUD y métricas.
+
+## Flujo del juego
+
+1. El proyecto carga primero `res://scenes/MainMenu.tscn`.
+2. El jugador presiona **INICIAR** o **Enter**.
+3. Godot cambia a `res://scenes/Main.tscn`.
+4. El jugador prueba las mecánicas avanzadas dentro de la escena integrada.

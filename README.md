@@ -183,3 +183,32 @@ Cómo probar:
 | Limpieza de datos | Incluido |
 | Nota técnica 15-20 líneas | Incluida |
 | Guion para video 60-90 s | Incluido |
+
+## Intro / menú inicial agregado
+
+Para mejorar la presentación del prototipo se agregó una escena de inicio:
+
+- `scenes/MainMenu.tscn`: pantalla inicial del juego.
+- `scripts/MainMenu.gd`: controla los botones del menú.
+- `assets/images/menu_background_inka.png`: fondo visual inspirado en montañas andinas, templos y cultura inca.
+
+Botones del menú:
+
+- **INICIAR**: carga la escena principal `Main.tscn`.
+- **LOGROS**: muestra logros relacionados con las mecánicas EE3: ricochet, Rayo del Inti, homing, niveles y métricas.
+
+Controles adicionales:
+
+- `Enter`: iniciar partida desde el menú.
+- `L`: abrir/cerrar logros desde el menú.
+- `Esc`: cerrar logros o volver al menú desde la partida.
+
+## Mejora visual: frames de disparo y daño
+
+Se agregó la carpeta `assets/images/player_frames/` con frames individuales y spritesheets del personaje.
+
+- `shoot_00.png` a `shoot_05.png`: animación breve al disparar.
+- `damage_00.png` a `damage_04.png`: animación cuando el jugador pierde una vida.
+- `shoot_spritesheet.png` y `damage_spritesheet.png`: láminas de referencia para revisión.
+
+Las animaciones están conectadas en `scripts/Player.gd`. El disparo se activa desde `Main.gd` cuando se usan las mecánicas de combate: disparo simple, abanico, rebote, rayo y guía.
