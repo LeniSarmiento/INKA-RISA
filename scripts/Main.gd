@@ -74,11 +74,6 @@ func _make_gameplay_node_pausable(node: Node) -> void:
 	for child in node.get_children():
 		_make_gameplay_node_pausable(child)
 
-
-func _play_player_shoot_animation() -> void:
-	if is_instance_valid(player) and player.has_method("start_shoot_animation"):
-		player.start_shoot_animation()
-
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().paused = false
@@ -246,11 +241,15 @@ func advance_level_for_demo() -> void:
 	else:
 		finish_game()
 
+func _play_player_attack_animation() -> void:
+	if is_instance_valid(player) and player.has_method("play_attack"):
+		player.play_attack()
+
 func try_shoot(is_spread: bool) -> void:
 	if cooldown_timer > 0.0:
 		return
 	cooldown_timer = cooldown
-	_play_player_shoot_animation()
+	_play_player_attack_animation()
 	sanitize_pattern_params()
 	if is_spread:
 		shoot_spread()
@@ -279,7 +278,7 @@ func try_ricochet_shot() -> void:
 	if cooldown_timer > 0.0:
 		return
 	cooldown_timer = cooldown
-	_play_player_shoot_animation()
+	_play_player_attack_animation()
 	sanitize_advanced_params()
 	total_attempts += 1
 	level_attempts += 1
@@ -298,7 +297,7 @@ func try_homing_shot() -> void:
 	if cooldown_timer > 0.0:
 		return
 	cooldown_timer = cooldown
-	_play_player_shoot_animation()
+	_play_player_attack_animation()
 	sanitize_advanced_params()
 	total_attempts += 1
 	level_attempts += 1
@@ -315,7 +314,7 @@ func try_homing_shot() -> void:
 	update_hud()
 
 func try_laser_ray() -> void:
-	_play_player_shoot_animation()
+	_play_player_attack_animation()
 	sanitize_advanced_params()
 	ray_attempts += 1
 	last_advanced_mechanic = "Rayo del Inti: detección"

@@ -1,115 +1,134 @@
 extends Node2D
 
-const PLAYER_TEXTURE: Texture2D = preload("res://assets/images/player_inca_front.png")
-const SHOOT_FRAMES: Array[Texture2D] = [
-	preload("res://assets/images/player_frames/shoot_00.png"),
-	preload("res://assets/images/player_frames/shoot_01.png"),
-	preload("res://assets/images/player_frames/shoot_02.png"),
-	preload("res://assets/images/player_frames/shoot_03.png"),
-	preload("res://assets/images/player_frames/shoot_04.png"),
-	preload("res://assets/images/player_frames/shoot_05.png")
-]
-const DAMAGE_FRAMES: Array[Texture2D] = [
-	preload("res://assets/images/player_frames/damage_00.png"),
-	preload("res://assets/images/player_frames/damage_01.png"),
-	preload("res://assets/images/player_frames/damage_02.png"),
-	preload("res://assets/images/player_frames/damage_03.png"),
-	preload("res://assets/images/player_frames/damage_04.png")
-]
+# Frames nuevos del avatar en cuclillas apuntando con lanza.
+const AIM_LEFT: Texture2D = preload("res://assets/images/player_aim_frames/aim_left.png")
+const AIM_UP_LEFT: Texture2D = preload("res://assets/images/player_aim_frames/aim_up_left.png")
+const AIM_UP: Texture2D = preload("res://assets/images/player_aim_frames/aim_up.png")
+const AIM_UP_RIGHT: Texture2D = preload("res://assets/images/player_aim_frames/aim_up_right.png")
+const AIM_RIGHT: Texture2D = preload("res://assets/images/player_aim_frames/aim_right.png")
+const AIM_DOWN_RIGHT: Texture2D = preload("res://assets/images/player_aim_frames/aim_down_right.png")
+const AIM_DOWN: Texture2D = preload("res://assets/images/player_aim_frames/aim_down.png")
+const AIM_DOWN_LEFT: Texture2D = preload("res://assets/images/player_aim_frames/aim_down_left.png")
+
+const ATTACK_LEFT: Texture2D = preload("res://assets/images/player_aim_frames/attack_left.png")
+const ATTACK_UP_LEFT: Texture2D = preload("res://assets/images/player_aim_frames/attack_up_left.png")
+const ATTACK_UP: Texture2D = preload("res://assets/images/player_aim_frames/attack_up.png")
+const ATTACK_UP_RIGHT: Texture2D = preload("res://assets/images/player_aim_frames/attack_up_right.png")
+const ATTACK_RIGHT: Texture2D = preload("res://assets/images/player_aim_frames/attack_right.png")
+const ATTACK_DOWN_RIGHT: Texture2D = preload("res://assets/images/player_aim_frames/attack_down_right.png")
+const ATTACK_DOWN: Texture2D = preload("res://assets/images/player_aim_frames/attack_down.png")
+const ATTACK_DOWN_LEFT: Texture2D = preload("res://assets/images/player_aim_frames/attack_down_left.png")
+
+const DAMAGE_LEFT: Texture2D = preload("res://assets/images/player_aim_frames/damage_left.png")
+const DAMAGE_UP_LEFT: Texture2D = preload("res://assets/images/player_aim_frames/damage_up_left.png")
+const DAMAGE_UP: Texture2D = preload("res://assets/images/player_aim_frames/damage_up.png")
+const DAMAGE_UP_RIGHT: Texture2D = preload("res://assets/images/player_aim_frames/damage_up_right.png")
+const DAMAGE_RIGHT: Texture2D = preload("res://assets/images/player_aim_frames/damage_right.png")
+const DAMAGE_DOWN_RIGHT: Texture2D = preload("res://assets/images/player_aim_frames/damage_down_right.png")
+const DAMAGE_DOWN: Texture2D = preload("res://assets/images/player_aim_frames/damage_down.png")
+const DAMAGE_DOWN_LEFT: Texture2D = preload("res://assets/images/player_aim_frames/damage_down_left.png")
 
 var aim_angle: float = 0.0
 var bob_time: float = 0.0
+var attack_time: float = 0.0
+var damage_time: float = 0.0
 var invulnerable_flash: float = 0.0
-var action_name: String = "idle"
-var action_timer: float = 0.0
-var shoot_duration: float = 0.26
-var damage_duration: float = 0.48
 
 func _process(delta: float) -> void:
 	bob_time += delta
+	if attack_time > 0.0:
+		attack_time -= delta
+	if damage_time > 0.0:
+		damage_time -= delta
 	if invulnerable_flash > 0.0:
-		invulnerable_flash = max(invulnerable_flash - delta, 0.0)
-	if action_timer > 0.0:
-		action_timer = max(action_timer - delta, 0.0)
-	else:
-		action_name = "idle"
+		invulnerable_flash -= delta
 	queue_redraw()
 
 func set_aim(angle_rad: float) -> void:
 	aim_angle = angle_rad
 	queue_redraw()
 
-func start_shoot_animation() -> void:
-	# Se activa cuando el jugador dispara: simple, abanico, rebote, rayo o guía.
-	action_name = "shoot"
-	action_timer = shoot_duration
+func play_attack() -> void:
+	attack_time = 0.18
 	queue_redraw()
 
 func pulse_damage() -> void:
-	# Se activa cuando se pierde una vida o un objetivo se escapa.
-	invulnerable_flash = damage_duration
-	action_name = "damage"
-	action_timer = damage_duration
+	damage_time = 0.48
+	invulnerable_flash = 0.48
 	queue_redraw()
 
-func _get_action_texture() -> Texture2D:
-	if action_name == "shoot":
-		var progress: float = 1.0 - clamp(action_timer / shoot_duration, 0.0, 1.0)
-		var index: int = clamp(int(progress * float(SHOOT_FRAMES.size())), 0, SHOOT_FRAMES.size() - 1)
-		return SHOOT_FRAMES[index]
-	elif action_name == "damage":
-		var progress: float = 1.0 - clamp(action_timer / damage_duration, 0.0, 1.0)
-		var index: int = clamp(int(progress * float(DAMAGE_FRAMES.size())), 0, DAMAGE_FRAMES.size() - 1)
-		return DAMAGE_FRAMES[index]
-	return PLAYER_TEXTURE
+func _get_aim_sector() -> String:
+	var deg: float = rad_to_deg(aim_angle)
+	if deg < -157.5 or deg >= 157.5:
+		return "left"
+	elif deg >= -157.5 and deg < -112.5:
+		return "up_left"
+	elif deg >= -112.5 and deg < -67.5:
+		return "up"
+	elif deg >= -67.5 and deg < -22.5:
+		return "up_right"
+	elif deg >= -22.5 and deg < 22.5:
+		return "right"
+	elif deg >= 22.5 and deg < 67.5:
+		return "down_right"
+	elif deg >= 67.5 and deg < 112.5:
+		return "down"
+	return "down_left"
+
+func _get_current_texture() -> Texture2D:
+	var sector: String = _get_aim_sector()
+	if damage_time > 0.0:
+		match sector:
+			"left": return DAMAGE_LEFT
+			"up_left": return DAMAGE_UP_LEFT
+			"up": return DAMAGE_UP
+			"up_right": return DAMAGE_UP_RIGHT
+			"right": return DAMAGE_RIGHT
+			"down_right": return DAMAGE_DOWN_RIGHT
+			"down": return DAMAGE_DOWN
+			_: return DAMAGE_DOWN_LEFT
+	if attack_time > 0.0:
+		match sector:
+			"left": return ATTACK_LEFT
+			"up_left": return ATTACK_UP_LEFT
+			"up": return ATTACK_UP
+			"up_right": return ATTACK_UP_RIGHT
+			"right": return ATTACK_RIGHT
+			"down_right": return ATTACK_DOWN_RIGHT
+			"down": return ATTACK_DOWN
+			_: return ATTACK_DOWN_LEFT
+	match sector:
+		"left": return AIM_LEFT
+		"up_left": return AIM_UP_LEFT
+		"up": return AIM_UP
+		"up_right": return AIM_UP_RIGHT
+		"right": return AIM_RIGHT
+		"down_right": return AIM_DOWN_RIGHT
+		"down": return AIM_DOWN
+		_: return AIM_DOWN_LEFT
 
 func _draw() -> void:
-	var bob: float = sin(bob_time * 7.0) * 3.0
-	var body_rect: Rect2 = Rect2(Vector2(-47, -150 + bob), Vector2(94, 202))
-	var alpha: float = 0.70 if invulnerable_flash > 0.0 and int(invulnerable_flash * 20.0) % 2 == 0 else 1.0
-
-	# Aura solar del Inti.
-	var aura_color: Color = Color(1.0, 0.67, 0.08, 0.12)
-	var aura_blue: Color = Color(0.0, 0.7, 0.75, 0.10)
-	if action_name == "shoot":
-		aura_color = Color(1.0, 0.82, 0.05, 0.24)
-		aura_blue = Color(0.0, 0.95, 1.0, 0.18)
-	elif action_name == "damage":
-		aura_color = Color(1.0, 0.05, 0.02, 0.23)
-		aura_blue = Color(1.0, 0.10, 0.02, 0.12)
-
-	draw_circle(Vector2(0, -48 + bob), 78, aura_color)
-	draw_circle(Vector2(0, -48 + bob), 47, aura_blue)
-
-	# Frame animado del personaje.
-	var current_texture: Texture2D = _get_action_texture()
-	draw_texture_rect(current_texture, body_rect, false, Color(1, 1, 1, alpha))
-
-	# Punto de disparo y lanza/energía en la dirección del ángulo theta.
+	var bob: float = sin(bob_time * 5.0) * 1.5
 	var dir: Vector2 = Vector2(cos(aim_angle), sin(aim_angle)).normalized()
-	var hand: Vector2 = Vector2(28, -58 + bob)
-	var start: Vector2 = hand
-	var end: Vector2 = hand + dir * 126.0
-	var line_width: float = 5.0
-	var orb_radius: float = 12.0
-	var beam_alpha: float = 0.95
-	if action_name == "shoot":
-		line_width = 7.0
-		orb_radius = 17.0
-		beam_alpha = 1.0
-	elif action_name == "damage":
-		line_width = 3.0
-		orb_radius = 9.0
-		beam_alpha = 0.55
+	var alpha: float = 0.65 if invulnerable_flash > 0.0 and int(invulnerable_flash * 20.0) % 2 == 0 else 1.0
 
-	draw_line(start, end, Color(1.0, 0.74, 0.16, beam_alpha), line_width)
-	draw_circle(end, orb_radius, Color(1.0, 0.9, 0.16, beam_alpha))
-	draw_line(start, hand + dir * 230.0, Color(1.0, 0.96, 0.40, 0.28), 2.0)
+	# Aura solar del Inti alrededor del avatar agachado.
+	draw_circle(Vector2(0, -66 + bob), 86, Color(1.0, 0.67, 0.08, 0.12))
+	draw_circle(Vector2(0, -66 + bob), 52, Color(0.0, 0.9, 1.0, 0.10))
 
-	if action_name == "damage":
-		# Pequeña marca visual de golpe para que se note en pantalla.
-		draw_arc(Vector2(0, -85 + bob), 62, deg_to_rad(205), deg_to_rad(330), 24, Color(1.0, 0.1, 0.05, 0.75), 4.0)
+	# Frame del avatar: cambia con el mouse en 8 direcciones.
+	var sprite_rect: Rect2 = Rect2(Vector2(-150, -190 + bob), Vector2(300, 260))
+	draw_texture_rect(_get_current_texture(), sprite_rect, false, Color(1.0, 1.0, 1.0, alpha))
+
+	# Línea de precisión: la lanza/energía mira exactamente hacia el mouse o sol objetivo.
+	var hand: Vector2 = Vector2(0, -82 + bob)
+	var spear_tip: Vector2 = hand + dir * 155.0
+	draw_line(hand, spear_tip, Color(1.0, 0.75, 0.10, 0.85), 5.0)
+	draw_line(hand, hand + dir * 235.0, Color(1.0, 0.92, 0.30, 0.25), 2.0)
+	draw_circle(spear_tip, 10.0, Color(1.0, 0.90, 0.12, 0.90))
+	if attack_time > 0.0:
+		draw_circle(spear_tip, 22.0, Color(1.0, 0.75, 0.05, 0.22))
 
 func get_muzzle_global_position() -> Vector2:
 	var dir: Vector2 = Vector2(cos(aim_angle), sin(aim_angle)).normalized()
-	return global_position + Vector2(28, -58) + dir * 116.0
+	return global_position + Vector2(0, -82) + dir * 150.0
