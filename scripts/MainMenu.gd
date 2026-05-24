@@ -1,6 +1,6 @@
 extends Control
 
-const MAIN_SCENE_PATH: String = "res://scenes/Main.tscn"
+const MAIN_SCENE_PATH: String = "res://scenes/LevelMap.tscn"
 const MENU_BACKGROUND: Texture2D = preload("res://assets/images/banner_run.jpg")
 
 var instructions_panel: Panel

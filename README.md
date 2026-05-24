@@ -203,12 +203,20 @@ Controles adicionales:
 - `L`: abrir/cerrar logros desde el menú.
 - `Esc`: cerrar logros o volver al menú desde la partida.
 
-## Mejora visual: frames de disparo y daño
 
-Se agregó la carpeta `assets/images/player_frames/` con frames individuales y spritesheets del personaje.
+## Actualización: Mapa de niveles y capas ambientales
 
-- `shoot_00.png` a `shoot_05.png`: animación breve al disparar.
-- `damage_00.png` a `damage_04.png`: animación cuando el jugador pierde una vida.
-- `shoot_spritesheet.png` y `damage_spritesheet.png`: láminas de referencia para revisión.
+Se agregó una escena de mapa antes del juego principal. El flujo ahora es:
 
-Las animaciones están conectadas en `scripts/Player.gd`. El disparo se activa desde `Main.gd` cuando se usan las mecánicas de combate: disparo simple, abanico, rebote, rayo y guía.
+```text
+Menú inicial → Mapa del juego → Selección de nivel → Juego
+```
+
+Archivos principales:
+
+- `scenes/LevelMap.tscn`
+- `scripts/LevelMap.gd`
+- `scripts/GameState.gd`
+- `scripts/Background.gd` actualizado con capas por nivel
+
+El fondo cambia según el nivel: inicio andino, ruinas incas, zona de rebotes, zona de habilidades y templo final. Esto refuerza la ambientación de InkaRise y hace más clara la progresión del prototipo EE3.

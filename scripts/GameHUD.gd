@@ -23,6 +23,7 @@ var ability_a_label: Label
 var ability_f_label: Label
 var ability_s_label: Label
 var center_message: Label
+var info_panel_visible: bool = true
 
 func _ready() -> void:
 	layer = 50
@@ -30,21 +31,22 @@ func _ready() -> void:
 	_build_interface()
 
 func _build_interface() -> void:
-	# Panel principal de información con estilo oscuro/neón.
-	left_panel = _make_panel(Vector2(16, 16), Vector2(515, 340), Color(0.01, 0.025, 0.03, 0.78), Color(0.0, 0.95, 1.0, 0.72), 20, 2)
+	# Panel compacto: se movió y redujo para no tapar la zona de juego.
+	# Presiona I para ocultar/mostrar los datos técnicos durante la partida.
+	left_panel = _make_panel(Vector2(18, 86), Vector2(430, 220), Color(0.01, 0.025, 0.03, 0.66), Color(0.0, 0.95, 1.0, 0.60), 18, 2)
 	add_child(left_panel)
 
-	var title: Label = _make_label(Vector2(0, 14), Vector2(515, 38), "INKARISE EE3", 28, Color(1.0, 0.72, 0.18, 1.0), HORIZONTAL_ALIGNMENT_CENTER)
+	var title: Label = _make_label(Vector2(0, 10), Vector2(430, 30), "INKARISE EE3", 24, Color(1.0, 0.72, 0.18, 1.0), HORIZONTAL_ALIGNMENT_CENTER)
 	left_panel.add_child(title)
-	var subtitle: Label = _make_label(Vector2(0, 48), Vector2(515, 24), "Combate trigonométrico y vectorial", 15, Color(1.0, 1.0, 1.0, 0.92), HORIZONTAL_ALIGNMENT_CENTER)
+	var subtitle: Label = _make_label(Vector2(0, 38), Vector2(430, 20), "Combate trigonométrico y vectorial", 13, Color(1.0, 1.0, 1.0, 0.90), HORIZONTAL_ALIGNMENT_CENTER)
 	left_panel.add_child(subtitle)
-	data_label = _make_label(Vector2(26, 92), Vector2(470, 168), "", 14, Color(1.0, 0.92, 0.70, 1.0), HORIZONTAL_ALIGNMENT_LEFT)
+	data_label = _make_label(Vector2(20, 66), Vector2(392, 84), "", 12, Color(1.0, 0.92, 0.70, 1.0), HORIZONTAL_ALIGNMENT_LEFT)
 	left_panel.add_child(data_label)
-	controls_label = _make_label(Vector2(26, 259), Vector2(470, 34), "A Rebote  |  F Rayo del Inti  |  S Guía  |  ESC Menú", 13, Color(0.0, 0.95, 1.0, 0.95), HORIZONTAL_ALIGNMENT_LEFT)
+	controls_label = _make_label(Vector2(20, 150), Vector2(392, 20), "A Rebote  |  F Rayo  |  S Guía  |  ESC Menú  |  I Datos", 12, Color(0.0, 0.95, 1.0, 0.95), HORIZONTAL_ALIGNMENT_LEFT)
 	left_panel.add_child(controls_label)
-	mechanic_label = _make_label(Vector2(26, 289), Vector2(470, 22), "Última mecánica: pendiente", 13, Color(1.0, 0.86, 0.35, 1.0), HORIZONTAL_ALIGNMENT_LEFT)
+	mechanic_label = _make_label(Vector2(20, 174), Vector2(392, 20), "Última mecánica: pendiente", 12, Color(1.0, 0.86, 0.35, 1.0), HORIZONTAL_ALIGNMENT_LEFT)
 	left_panel.add_child(mechanic_label)
-	cleaning_label = _make_label(Vector2(26, 314), Vector2(470, 18), "Limpieza de datos: parámetros válidos", 12, Color(0.64, 1.0, 0.36, 1.0), HORIZONTAL_ALIGNMENT_LEFT)
+	cleaning_label = _make_label(Vector2(20, 197), Vector2(392, 18), "Limpieza de datos: parámetros válidos", 11, Color(0.64, 1.0, 0.36, 1.0), HORIZONTAL_ALIGNMENT_LEFT)
 	left_panel.add_child(cleaning_label)
 
 	# Barra superior con vida, puntaje, nivel y botón de pausa funcional.
@@ -95,6 +97,13 @@ func _build_interface() -> void:
 	center_message.add_theme_constant_override("shadow_offset_y", 3)
 	add_child(center_message)
 
+func _unhandled_input(event: InputEvent) -> void:
+	# Permite ocultar el panel técnico para que no moleste la pantalla del usuario.
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_I:
+			info_panel_visible = not info_panel_visible
+			left_panel.visible = info_panel_visible
+
 func update_data(data: Dictionary) -> void:
 	var current_level: int = int(data.get("current_level", 1))
 	var max_level: int = int(data.get("max_level", 10))
@@ -136,13 +145,11 @@ func update_data(data: Dictionary) -> void:
 	objective_label.text = "OBJETIVO: %d/%d" % [level_hits, level_goal_hits]
 	objective_bar.value = clamp(float(level_hits) * 100.0 / float(level_goal_hits), 0.0, 100.0)
 
-	data_label.text = "▲ Nivel: %d/%d   |   Objetivo: %d/%d   |   Vidas: %d\n" % [current_level, max_level, level_hits, level_goal_hits, lives]
-	data_label.text += "◎ θ = %.2f°   |   Estado: %s\n" % [theta_base_deg, cooldown_state]
-	data_label.text += "✦ Δθ=%.1f°   |   Proyectiles=%d   |   Velocidad=%.0f px/s\n" % [delta_theta_deg, projectile_count, projectile_speed]
-	data_label.text += "⚡ Recarga=%.2fs   |   Rebotes máx=%d\n" % [cooldown, max_bounces]
-	data_label.text += "▣ Normal=(%.0f, %.0f)   |   Rayo=%.0f px   |   Giro=%.1f\n" % [normal_x, normal_y, ray_distance, turn_speed]
-	data_label.text += "A Rebote %d/%d rebotes:%d   |   F Rayo %d/%d\n" % [ricochet_hits, ricochet_attempts, ricochet_events, ray_hits, ray_attempts]
-	data_label.text += "S Guía %d/%d   |   Rayo: %s" % [homing_hits, homing_attempts, _short_text(last_ray_result, 28)]
+	data_label.text = "▲ Nivel %d/%d | Obj. %d/%d | Vidas %d\n" % [current_level, max_level, level_hits, level_goal_hits, lives]
+	data_label.text += "◎ θ %.1f° | Estado %s | Δθ %.1f°\n" % [theta_base_deg, cooldown_state, delta_theta_deg]
+	data_label.text += "✦ Proy. %d | Vel. %.0f | Recarga %.2fs\n" % [projectile_count, projectile_speed, cooldown]
+	data_label.text += "▣ Normal(%.0f,%.0f) | Rayo %.0f | Giro %.1f\n" % [normal_x, normal_y, ray_distance, turn_speed]
+	data_label.text += "A Rebote %d/%d | F Rayo %d/%d | S Guía %d/%d" % [ricochet_hits, ricochet_attempts, ray_hits, ray_attempts, homing_hits, homing_attempts]
 	mechanic_label.text = "Última mecánica: %s" % _short_text(last_advanced_mechanic, 52)
 	cleaning_label.text = "Limpieza de datos: %s" % _short_text(last_cleaning_note, 50)
 
