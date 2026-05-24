@@ -1,6 +1,7 @@
 extends Node2D
 
-# Frames nuevos del avatar en cuclillas apuntando con lanza.
+# Avatar mejorado: frames reales del guerrero/guerrera inca con lanza.
+# Cambia de postura según la dirección del mouse en 8 sectores.
 const AIM_LEFT: Texture2D = preload("res://assets/images/player_aim_frames/aim_left.png")
 const AIM_UP_LEFT: Texture2D = preload("res://assets/images/player_aim_frames/aim_up_left.png")
 const AIM_UP: Texture2D = preload("res://assets/images/player_aim_frames/aim_up.png")
@@ -37,11 +38,11 @@ var invulnerable_flash: float = 0.0
 func _process(delta: float) -> void:
 	bob_time += delta
 	if attack_time > 0.0:
-		attack_time -= delta
+		attack_time = max(attack_time - delta, 0.0)
 	if damage_time > 0.0:
-		damage_time -= delta
+		damage_time = max(damage_time - delta, 0.0)
 	if invulnerable_flash > 0.0:
-		invulnerable_flash -= delta
+		invulnerable_flash = max(invulnerable_flash - delta, 0.0)
 	queue_redraw()
 
 func set_aim(angle_rad: float) -> void:
@@ -49,12 +50,12 @@ func set_aim(angle_rad: float) -> void:
 	queue_redraw()
 
 func play_attack() -> void:
-	attack_time = 0.18
+	attack_time = 0.20
 	queue_redraw()
 
 func pulse_damage() -> void:
-	damage_time = 0.48
-	invulnerable_flash = 0.48
+	damage_time = 0.50
+	invulnerable_flash = 0.50
 	queue_redraw()
 
 func _get_aim_sector() -> String:
@@ -108,27 +109,33 @@ func _get_current_texture() -> Texture2D:
 		_: return AIM_DOWN_LEFT
 
 func _draw() -> void:
-	var bob: float = sin(bob_time * 5.0) * 1.5
+	var bob: float = sin(bob_time * 5.0) * 1.3
 	var dir: Vector2 = Vector2(cos(aim_angle), sin(aim_angle)).normalized()
-	var alpha: float = 0.65 if invulnerable_flash > 0.0 and int(invulnerable_flash * 20.0) % 2 == 0 else 1.0
+	var side: float = 1.0 if dir.x >= 0.0 else -1.0
+	var alpha: float = 1.0
+	if invulnerable_flash > 0.0 and int(invulnerable_flash * 20.0) % 2 == 0:
+		alpha = 0.60
 
-	# Aura solar del Inti alrededor del avatar agachado.
-	draw_circle(Vector2(0, -66 + bob), 86, Color(1.0, 0.67, 0.08, 0.12))
-	draw_circle(Vector2(0, -66 + bob), 52, Color(0.0, 0.9, 1.0, 0.10))
+	# Sombra y aura del Inti detrás del personaje.
+	draw_circle(Vector2(0, 40 + bob), 48.0, Color(0.0, 0.0, 0.0, 0.18))
+	draw_circle(Vector2(0, -72 + bob), 68, Color(1.0, 0.67, 0.08, 0.10))
+	draw_circle(Vector2(0, -72 + bob), 42, Color(0.0, 0.9, 1.0, 0.08))
 
-	# Frame del avatar: cambia con el mouse en 8 direcciones.
-	var sprite_rect: Rect2 = Rect2(Vector2(-150, -190 + bob), Vector2(300, 260))
-	draw_texture_rect(_get_current_texture(), sprite_rect, false, Color(1.0, 1.0, 1.0, alpha))
+	# Frame real del avatar. El sprite ya incluye postura y lanza.
+	var texture: Texture2D = _get_current_texture()
+	var sprite_rect: Rect2 = Rect2(Vector2(-150, -190 + bob), Vector2(300, 217))
+	draw_texture_rect(texture, sprite_rect, false, Color(1.0, 1.0, 1.0, alpha))
 
-	# Línea de precisión: la lanza/energía mira exactamente hacia el mouse o sol objetivo.
-	var hand: Vector2 = Vector2(0, -82 + bob)
-	var spear_tip: Vector2 = hand + dir * 155.0
-	draw_line(hand, spear_tip, Color(1.0, 0.75, 0.10, 0.85), 5.0)
-	draw_line(hand, hand + dir * 235.0, Color(1.0, 0.92, 0.30, 0.25), 2.0)
-	draw_circle(spear_tip, 10.0, Color(1.0, 0.90, 0.12, 0.90))
+	# Guía visual del apuntado: es delgada para no tapar la lanza del sprite.
+	var hand: Vector2 = Vector2(16.0 * side, -92.0 + bob)
+	var spear_tip: Vector2 = hand + dir * 142.0
+	draw_line(hand, spear_tip, Color(1.0, 0.85, 0.18, 0.32), 2.0)
 	if attack_time > 0.0:
-		draw_circle(spear_tip, 22.0, Color(1.0, 0.75, 0.05, 0.22))
+		draw_circle(spear_tip, 12.0, Color(1.0, 0.72, 0.05, 0.28))
+		draw_circle(spear_tip, 5.0, Color(1.0, 0.92, 0.20, 0.85))
 
 func get_muzzle_global_position() -> Vector2:
 	var dir: Vector2 = Vector2(cos(aim_angle), sin(aim_angle)).normalized()
-	return global_position + Vector2(0, -82) + dir * 150.0
+	var side: float = 1.0 if dir.x >= 0.0 else -1.0
+	var hand: Vector2 = Vector2(16.0 * side, -92.0)
+	return global_position + hand + dir * 142.0

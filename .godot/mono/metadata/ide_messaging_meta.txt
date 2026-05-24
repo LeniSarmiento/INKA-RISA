@@ -1,2 +1,2 @@
-﻿62698
-C:/Users/LENOVO/Documents/Godot_v4.6.3-stable_mono_win64/Godot_v4.6.3-stable_mono_win64.exe
+﻿59333
+D:/Users/examplo/Downloads/Godot_v4.6.2-stable_mono_win64/Godot_v4.6.2-stable_mono_win64/Godot_v4.6.2-stable_mono_win64.exe
