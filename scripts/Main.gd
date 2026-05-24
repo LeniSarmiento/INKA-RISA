@@ -94,7 +94,11 @@ func _ready() -> void:
 	laser_sensor.ray_tested.connect(_on_ray_tested)
 
 	_create_hud()
-	start_level(1)
+	var initial_level: int = 1
+	var state: Node = get_node_or_null("/root/GameState")
+	if is_instance_valid(state):
+		initial_level = int(state.get("selected_level"))
+	start_level(initial_level)
 
 func _process(delta: float) -> void:
 	if game_paused:
@@ -190,6 +194,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func start_level(level: int) -> void:
 	current_level = clamp(level, 1, max_level)
+	if is_instance_valid(background) and background.has_method("setup_level"):
+		background.call("setup_level", current_level)
 	level_hits = 0
 	level_attempts = 0
 	level_misses = 0
@@ -234,17 +240,18 @@ func configure_difficulty(level: int) -> void:
 	sanitize_advanced_params()
 
 func setup_ricochet_arena() -> void:
-	# Tres superficies con ángulos/posiciones diferentes para probar el ricochet.
-	_create_wall(Vector2(680, 450), Vector2(26, 210), "Muro vertical")
-	_create_wall(Vector2(920, 255), Vector2(240, 24), "Muro horizontal")
-	_create_wall(Vector2(1060, 520), Vector2(28, 170), "Muro final")
+	# Tres superficies móviles con ángulos/posiciones diferentes para probar el ricochet.
+	# Las tablas se mueven para ayudar al rebote y evidenciar mejor la reflexión con normal.
+	_create_wall(Vector2(680, 450), Vector2(26, 210), "Tabla vertical", Vector2(0, 1), 42.0, 1.25)
+	_create_wall(Vector2(920, 255), Vector2(240, 24), "Tabla horizontal", Vector2(1, 0), 55.0, 1.05)
+	_create_wall(Vector2(1060, 520), Vector2(28, 170), "Tabla final", Vector2(0, 1), 36.0, 1.55)
 
-func _create_wall(pos: Vector2, size: Vector2, label: String) -> void:
+func _create_wall(pos: Vector2, size: Vector2, label: String, axis: Vector2 = Vector2.ZERO, amplitude: float = 0.0, speed: float = 1.0) -> void:
 	var wall = RICOCHET_WALL_SCENE.instantiate()
 	_make_gameplay_node_pausable(wall)
 	wall.position = pos
 	add_child(wall)
-	wall.setup(size, label)
+	wall.setup(size, label, axis, amplitude, speed)
 
 func advance_level_for_demo() -> void:
 	if current_level < max_level:
