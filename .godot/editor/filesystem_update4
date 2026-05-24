@@ -47,3 +47,4 @@ res://records/mini_registro_runtime_ee3_ejemplo.advanced.translation
 res://records/mini_registro_runtime_ee3_ejemplo.nota.translation
 res://scripts/Player.gd
 res://scenes/Main.tscn
+res://scripts/Main.gd

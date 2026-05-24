@@ -105,11 +105,7 @@ func _process(delta: float) -> void:
 	if cooldown_timer > 0.0:
 		cooldown_timer -= delta
 
-	var direction = get_global_mouse_position() - player.global_position
-	if direction.length() > 1.0:
-		theta_base_rad = direction.angle()
-		theta_base_deg = rad_to_deg(theta_base_rad)
-		player.set_aim(theta_base_rad)
+	_sync_player_aim_with_mouse()
 
 	spawn_timer -= delta
 	if spawn_timer <= 0.0 and get_tree().get_nodes_in_group("targets").size() < max_alive_targets:
@@ -123,6 +119,21 @@ func _process(delta: float) -> void:
 		center_message.visible = false
 
 	update_hud()
+
+
+func _sync_player_aim_with_mouse() -> void:
+	if not is_instance_valid(player):
+		return
+	var mouse_global: Vector2 = get_global_mouse_position()
+	if player.has_method("set_aim_target"):
+		player.call("set_aim_target", mouse_global)
+		theta_base_rad = float(player.call("get_aim_angle_rad"))
+	else:
+		var direction: Vector2 = mouse_global - player.global_position
+		if direction.length() > 1.0:
+			theta_base_rad = direction.angle()
+			player.call("set_aim", theta_base_rad)
+	theta_base_deg = rad_to_deg(theta_base_rad)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if game_finished:
@@ -246,6 +257,7 @@ func _play_player_attack_animation() -> void:
 		player.play_attack()
 
 func try_shoot(is_spread: bool) -> void:
+	_sync_player_aim_with_mouse()
 	if cooldown_timer > 0.0:
 		return
 	cooldown_timer = cooldown
@@ -275,6 +287,7 @@ func shoot_projectile(angle_rad: float, shot_type: String) -> void:
 	projectile.projectile_finished.connect(_on_projectile_finished)
 
 func try_ricochet_shot() -> void:
+	_sync_player_aim_with_mouse()
 	if cooldown_timer > 0.0:
 		return
 	cooldown_timer = cooldown
@@ -294,6 +307,7 @@ func try_ricochet_shot() -> void:
 	update_hud()
 
 func try_homing_shot() -> void:
+	_sync_player_aim_with_mouse()
 	if cooldown_timer > 0.0:
 		return
 	cooldown_timer = cooldown
@@ -314,6 +328,7 @@ func try_homing_shot() -> void:
 	update_hud()
 
 func try_laser_ray() -> void:
+	_sync_player_aim_with_mouse()
 	_play_player_attack_animation()
 	sanitize_advanced_params()
 	ray_attempts += 1
