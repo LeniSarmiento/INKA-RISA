@@ -406,6 +406,9 @@ func _on_target_destroyed(points: int) -> void:
 	level_hits += 1
 	score += points * 10
 	if level_hits >= level_goal_hits:
+		var state: Node = get_node_or_null("/root/GameState")
+		if is_instance_valid(state) and state.has_method("mark_completed"):
+			state.call("mark_completed", current_level, score)
 		if current_level >= max_level:
 			finish_game()
 		else:

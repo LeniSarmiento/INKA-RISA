@@ -186,15 +186,17 @@ Cómo probar:
 
 ## Intro / menú inicial agregado
 
-Para mejorar la presentación del prototipo se agregó una escena de inicio:
+Para mejorar la presentacion del prototipo se agregaron una pantalla de presentacion y un menu inicial:
 
+- `scenes/Splash.tscn`: pantalla breve de presentacion antes del menu.
+- `scripts/Splash.gd`: controla la transicion automatica al menu.
 - `scenes/MainMenu.tscn`: pantalla inicial del juego.
 - `scripts/MainMenu.gd`: controla los botones del menú.
 - `assets/images/menu_background_inka.png`: fondo visual inspirado en montañas andinas, templos y cultura inca.
 
 Botones del menú:
 
-- **INICIAR**: carga la escena principal `Main.tscn`.
+- **INICIAR**: carga el mapa de niveles `LevelMap.tscn`.
 - **LOGROS**: muestra logros relacionados con las mecánicas EE3: ricochet, Rayo del Inti, homing, niveles y métricas.
 
 Controles adicionales:
@@ -209,7 +211,7 @@ Controles adicionales:
 Se agregó una escena de mapa antes del juego principal. El flujo ahora es:
 
 ```text
-Menú inicial → Mapa del juego → Selección de nivel → Juego
+Pantalla de presentacion -> Menu inicial -> Mapa del juego -> Seleccion de nivel -> Juego
 ```
 
 Archivos principales:
