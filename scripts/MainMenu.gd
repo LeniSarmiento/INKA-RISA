@@ -39,7 +39,7 @@ func _build_menu() -> void:
 	add_child(dark_overlay)
 
 	var cyan_glow_top: ColorRect = ColorRect.new()
-	cyan_glow_top.color = Color(0.0, 0.95, 1.0, 0.08)
+	cyan_glow_top.color = Color(0.0, 0.95, 1.0, 0.0)
 	cyan_glow_top.position = Vector2(0, 0)
 	cyan_glow_top.size = Vector2(width, 16)
 	add_child(cyan_glow_top)
@@ -47,7 +47,7 @@ func _build_menu() -> void:
 	var left_panel: Panel = Panel.new()
 	left_panel.position = Vector2(width * 0.04, height * 0.06)
 	left_panel.size = Vector2(width * 0.47, height * 0.86)
-	left_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.005, 0.02, 0.025, 0.78), Color(0.0, 0.95, 1.0, 0.92), 3, 22, Color(0.0, 0.9, 1.0, 0.28), 18))
+	left_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.005, 0.02, 0.025, 0.78), Color(0.0, 0.95, 1.0, 0.92), 3, 22, Color(0.0, 0.0, 0.0, 0.0), 0))
 	add_child(left_panel)
 
 	_create_left_content(left_panel)
@@ -186,7 +186,7 @@ func _create_instructions_panel(width: float, height: float) -> void:
 	instructions_panel.position = Vector2(width * 0.56, height * 0.095)
 	instructions_panel.size = Vector2(width * 0.40, height * 0.78)
 	instructions_panel.visible = instructions_visible
-	instructions_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.0, 0.018, 0.022, 0.86), Color(0.0, 0.95, 1.0, 0.96), 3, 22, Color(0.0, 0.9, 1.0, 0.24), 16))
+	instructions_panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.0, 0.018, 0.022, 0.86), Color(0.0, 0.95, 1.0, 0.96), 3, 22, Color(0.0, 0.0, 0.0, 0.0), 0))
 	add_child(instructions_panel)
 
 	var margin: MarginContainer = MarginContainer.new()
