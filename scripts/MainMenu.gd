@@ -218,6 +218,8 @@ func _create_instructions_panel(width: float, height: float) -> void:
 	decorative_line.add_theme_color_override("font_color", Color(1.0, 0.65, 0.08, 0.75))
 	box.add_child(decorative_line)
 
+	box.add_child(_make_instruction_row(">", "MOVIMIENTO", "Flechas para correr y Espacio/W para saltar", "< >", Color(0.0, 0.95, 1.0)))
+
 	box.add_child(_make_instruction_row("☀", "REBOTE ANDINO", "Probar rebote con la tecla", "A", Color(1.0, 0.65, 0.05)))
 	box.add_child(_make_instruction_row("⚡", "RAYO DEL INTI", "Detectar objetivos con la tecla", "F", Color(1.0, 0.22, 0.04)))
 	box.add_child(_make_instruction_row("🌀", "ESPÍRITU GUÍA", "Lanzar espíritu guía con la tecla", "S", Color(0.35, 0.62, 1.0)))

@@ -15,6 +15,7 @@ var wave_time: float = 0.0
 var vertical_amplitude: float = 0.0
 var vertical_frequency: float = 1.0
 var tint: Color = Color(1.0, 0.66, 0.12)
+var is_boss: bool = false
 
 func _ready() -> void:
 	add_to_group("targets")
@@ -34,11 +35,27 @@ func setup(p_level: int, p_speed: float, p_radius: float, p_hp: int) -> void:
 	tint = Color(1.0, 0.70, 0.10) if level < 6 else Color(1.0, 0.28, 0.12)
 	queue_redraw()
 
+func setup_boss(p_level: int) -> void:
+	is_boss = true
+	level = p_level
+	speed = 0.0
+	hit_radius = 54.0
+	hp = 6 + p_level
+	max_hp = hp
+	points = 10 * p_level
+	vertical_amplitude = 18.0
+	vertical_frequency = 1.25
+	tint = Color(1.0, 0.25, 0.08)
+	queue_redraw()
+
 func _process(delta: float) -> void:
 	if is_dead:
 		return
 	wave_time += delta
-	position.x -= speed * delta
+	if is_boss:
+		position.x = 1160.0 + sin(wave_time * 0.9) * 18.0
+	else:
+		position.x -= speed * delta
 	position.y = base_y + sin(wave_time * vertical_frequency) * vertical_amplitude
 	rotation = sin(wave_time * 2.0) * 0.10
 	if position.x < -70.0:
@@ -78,3 +95,5 @@ func _draw() -> void:
 		# Indicador de resistencia sin depender de fuentes externas.
 		for i in range(hp):
 			draw_circle(Vector2(-8 + i * 8, 0), 3.0, Color(0.16, 0.06, 0.02, 0.9))
+	if is_boss:
+		draw_string(ThemeDB.fallback_font, Vector2(-34, -64), "BOSS", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(1.0, 0.92, 0.30))

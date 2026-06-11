@@ -9,6 +9,7 @@ const HOMING_PROJECTILE_SCENE = preload("res://scenes/HomingProjectile.tscn")
 const LASER_SENSOR_SCENE = preload("res://scenes/LaserSensor.tscn")
 const RICOCHET_WALL_SCENE = preload("res://scenes/RicochetWall.tscn")
 const GAME_HUD_SCRIPT = preload("res://scripts/GameHUD.gd")
+const PLAYER_SPAWN_POSITION: Vector2 = Vector2(80, 650)
 
 var background: Node2D
 var player: Node2D
@@ -47,6 +48,9 @@ var target_radius: float = 36.0
 var target_hp: int = 1
 var game_finished: bool = false
 var game_paused: bool = false
+var boss_active: bool = false
+var boss_defeated: bool = false
+var damage_grace_timer: float = 0.0
 
 # Parámetros EE3: interacciones avanzadas.
 var max_bounces: int = 3
@@ -84,8 +88,10 @@ func _ready() -> void:
 
 	player = PLAYER_SCENE.instantiate()
 	_make_gameplay_node_pausable(player)
-	player.position = Vector2(180, 615)
+	player.position = PLAYER_SPAWN_POSITION
 	add_child(player)
+	if player.has_method("set_platforms"):
+		player.call("set_platforms", _get_platform_rects())
 
 	laser_sensor = LASER_SENSOR_SCENE.instantiate()
 	_make_gameplay_node_pausable(laser_sensor)
@@ -106,13 +112,17 @@ func _process(delta: float) -> void:
 	if game_finished:
 		return
 	level_time += delta
+	if damage_grace_timer > 0.0:
+		damage_grace_timer -= delta
 	if cooldown_timer > 0.0:
 		cooldown_timer -= delta
 
 	_sync_player_aim_with_mouse()
+	_check_platform_collisions()
+	_check_goal_reached()
 
 	spawn_timer -= delta
-	if spawn_timer <= 0.0 and get_tree().get_nodes_in_group("targets").size() < max_alive_targets:
+	if spawn_timer <= 0.0 and not boss_active and not boss_defeated and get_tree().get_nodes_in_group("targets").size() < max_alive_targets:
 		spawn_one_target()
 		spawn_timer = spawn_interval
 
@@ -134,7 +144,7 @@ func _sync_player_aim_with_mouse() -> void:
 		theta_base_rad = float(player.call("get_aim_angle_rad"))
 	else:
 		var direction: Vector2 = mouse_global - player.global_position
-		if direction.length() > 1.0:
+		if direction.length() > 1.0 and player.has_method("set_aim"):
 			theta_base_rad = direction.angle()
 			player.call("set_aim", theta_base_rad)
 	theta_base_deg = rad_to_deg(theta_base_rad)
@@ -202,10 +212,15 @@ func start_level(level: int) -> void:
 	level_time = 0.0
 	level_banner_timer = 2.0
 	game_finished = false
+	boss_active = false
+	boss_defeated = false
+	damage_grace_timer = 0.0
 	_clear_playfield()
+	if is_instance_valid(player) and player.has_method("reset_to_spawn"):
+		player.call("reset_to_spawn", PLAYER_SPAWN_POSITION)
 	configure_difficulty(current_level)
 	setup_ricochet_arena()
-	center_message.text = "NIVEL %d / 10\nEE3: rebote + rayo + guía integrados" % current_level
+	center_message.text = "NIVEL %d / 10\nCorre, salta, esquiva soles y derrota al BOSS" % current_level
 	for i in range(min(max_alive_targets, 2 + current_level)):
 		spawn_one_target()
 	update_hud()
@@ -392,12 +407,11 @@ func get_nearest_target(from_pos: Vector2) -> Node2D:
 func spawn_one_target() -> void:
 	var target = TARGET_SCENE.instantiate()
 	_make_gameplay_node_pausable(target)
-	var y_min = 150.0
-	var y_max = 585.0
-	var pos = Vector2(randf_range(980.0, 1320.0), randf_range(y_min, y_max))
+	var lanes: Array[float] = [590.0, 535.0, 480.0, 420.0]
+	var pos = Vector2(randf_range(760.0, 1280.0), lanes[randi() % lanes.size()])
 	target.position = pos
 	add_child(target)
-	target.setup(current_level, target_speed * randf_range(0.85, 1.18), target_radius, target_hp)
+	target.setup(current_level, target_speed * randf_range(0.85, 1.18), max(18.0, target_radius * 0.70), target_hp)
 	target.destroyed.connect(_on_target_destroyed)
 	target.escaped.connect(_on_target_escaped)
 
@@ -405,7 +419,19 @@ func _on_target_destroyed(points: int) -> void:
 	total_hits += 1
 	level_hits += 1
 	score += points * 10
-	if level_hits >= level_goal_hits:
+	if level_hits >= level_goal_hits and not boss_active and not boss_defeated:
+		_spawn_boss()
+		update_hud()
+		return
+	if boss_active and level_hits >= level_goal_hits + 1:
+		boss_active = false
+		boss_defeated = true
+		center_message.visible = true
+		center_message.text = "BOSS DERROTADO\nCorre hasta la META"
+		level_banner_timer = 2.0
+		update_hud()
+		return
+	if false:
 		var state: Node = get_node_or_null("/root/GameState")
 		if is_instance_valid(state) and state.has_method("mark_completed"):
 			state.call("mark_completed", current_level, score)
@@ -417,16 +443,82 @@ func _on_target_destroyed(points: int) -> void:
 		update_hud()
 
 func _on_target_escaped() -> void:
+	if boss_active:
+		return
 	lives -= 1
 	total_misses += 1
 	level_misses += 1
 	player.pulse_damage()
 	if lives <= 0:
-		reset_all_game()
-		center_message.text = "Perdiste las 3 vidas\nReinicio al nivel 1"
-		level_banner_timer = 2.5
-		update_hud()
+		game_over()
 		return
+	update_hud()
+
+func _spawn_boss() -> void:
+	boss_active = true
+	for target in get_tree().get_nodes_in_group("targets"):
+		if is_instance_valid(target):
+			target.queue_free()
+	center_message.visible = true
+	center_message.text = "BOSS DEL SOL\nAtaca y esquiva para abrir la META"
+	level_banner_timer = 2.0
+	var boss = TARGET_SCENE.instantiate()
+	_make_gameplay_node_pausable(boss)
+	boss.position = Vector2(1160, 470)
+	add_child(boss)
+	boss.setup_boss(current_level)
+	boss.destroyed.connect(_on_target_destroyed)
+
+func _check_platform_collisions() -> void:
+	if damage_grace_timer > 0.0 or not is_instance_valid(player):
+		return
+	var body: Rect2 = player.call("get_body_rect") if player.has_method("get_body_rect") else Rect2(player.global_position + Vector2(-20, -60), Vector2(40, 60))
+	for target in get_tree().get_nodes_in_group("targets"):
+		if not is_instance_valid(target) or target.is_dead:
+			continue
+		if body.get_center().distance_to(target.global_position) <= target.get_hit_radius() + 16.0:
+			_player_take_damage()
+			return
+
+func _player_take_damage() -> void:
+	damage_grace_timer = 1.0
+	lives -= 1
+	if is_instance_valid(player) and player.has_method("pulse_damage"):
+		player.pulse_damage()
+	if lives <= 0:
+		game_over()
+	else:
+		if is_instance_valid(player) and player.has_method("reset_to_spawn"):
+			player.call("reset_to_spawn", PLAYER_SPAWN_POSITION)
+		update_hud()
+
+func _check_goal_reached() -> void:
+	if not boss_defeated or not is_instance_valid(player):
+		return
+	var feet: Vector2 = player.call("get_feet_position") if player.has_method("get_feet_position") else player.global_position
+	if feet.x >= 1200.0:
+		var state: Node = get_node_or_null("/root/GameState")
+		if is_instance_valid(state) and state.has_method("mark_completed"):
+			state.call("mark_completed", current_level, score)
+		if current_level >= max_level:
+			finish_game()
+		else:
+			start_level(current_level + 1)
+
+func _get_platform_rects() -> Array[Rect2]:
+	return [
+		Rect2(270, 565, 120, 22),
+		Rect2(500, 510, 120, 22),
+		Rect2(720, 455, 132, 22),
+		Rect2(935, 540, 118, 22),
+		Rect2(1080, 450, 112, 22)
+	]
+
+func game_over() -> void:
+	game_finished = true
+	_clear_playfield()
+	center_message.visible = true
+	center_message.text = "GAME OVER\nPresiona R para reiniciar"
 	update_hud()
 
 func sanitize_pattern_params() -> void:
@@ -506,7 +598,7 @@ func finish_game() -> void:
 	game_finished = true
 	_clear_playfield()
 	center_message.visible = true
-	center_message.text = "¡GANASTE INKARISE EE3!\nCompletaste los 10 niveles\nPrecisión total: %.1f%%\nPresiona R para reiniciar" % get_total_precision()
+	center_message.text = "YOU WIN\nCompletaste InkaRise 8-Bit\nPresiona R para reiniciar"
 	update_hud()
 
 func _clear_playfield() -> void:
