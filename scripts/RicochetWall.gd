@@ -15,7 +15,7 @@ var moving_enabled: bool = false
 
 func _ready() -> void:
 	add_to_group("ricochet_walls")
-	base_position = global_position
+	base_position = position
 	queue_redraw()
 
 func _process(delta: float) -> void:
@@ -23,7 +23,7 @@ func _process(delta: float) -> void:
 		return
 	time_passed += delta
 	var offset_value: float = sin(time_passed * movement_speed) * movement_amplitude
-	global_position = base_position + movement_axis.normalized() * offset_value
+	position = base_position + movement_axis.normalized() * offset_value
 	queue_redraw()
 
 func setup(p_size: Vector2, p_label: String = "Muro Inti", p_axis: Vector2 = Vector2.ZERO, p_amplitude: float = 0.0, p_speed: float = 1.0) -> void:
@@ -33,11 +33,11 @@ func setup(p_size: Vector2, p_label: String = "Muro Inti", p_axis: Vector2 = Vec
 	movement_amplitude = max(0.0, p_amplitude)
 	movement_speed = max(0.1, p_speed)
 	moving_enabled = movement_axis.length() > 0.0 and movement_amplitude > 0.0
-	base_position = global_position
+	base_position = position
 	queue_redraw()
 
 func get_collision_rect() -> Rect2:
-	return Rect2(global_position - wall_size * 0.5, wall_size)
+	return Rect2(position - wall_size * 0.5, wall_size)
 
 func get_bounce_normal(old_pos: Vector2, new_pos: Vector2) -> Vector2:
 	var rect: Rect2 = get_collision_rect()

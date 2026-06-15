@@ -68,6 +68,7 @@ var facing_direction: int = 1
 var is_on_ground: bool = true
 var walk_time: float = 0.0
 var platform_rects: Array[Rect2] = []
+var world_width: float = 1280.0
 
 const MOVE_SPEED: float = 230.0
 const JUMP_SPEED: float = 640.0
@@ -77,8 +78,9 @@ const SCREEN_MARGIN: float = 32.0
 
 func _ready() -> void:
 	# Objetivo inicial: apunta hacia la derecha para evitar un ángulo vacío al iniciar.
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_load_movement_frames()
-	ground_y = global_position.y
+	ground_y = position.y
 	aim_target_global = get_aim_origin_global_position() + Vector2.RIGHT * 300.0
 
 func _load_movement_frames() -> void:
@@ -129,11 +131,11 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _update_platform_movement(delta: float) -> void:
-	var previous_position: Vector2 = global_position
+	var previous_position: Vector2 = position
 	var input_axis: float = 0.0
-	if Input.is_key_pressed(KEY_LEFT):
+	if Input.is_key_pressed(KEY_A):
 		input_axis -= 1.0
-	if Input.is_key_pressed(KEY_RIGHT):
+	if Input.is_key_pressed(KEY_D):
 		input_axis += 1.0
 
 	if absf(input_axis) > 0.01:
@@ -143,26 +145,28 @@ func _update_platform_movement(delta: float) -> void:
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, FRICTION * delta)
 
-	if is_on_ground and (Input.is_key_pressed(KEY_SPACE) or Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP)):
+	if is_on_ground and Input.is_key_pressed(KEY_W):
 		velocity.y = -JUMP_SPEED
 		is_on_ground = false
+	elif not is_on_ground and Input.is_key_pressed(KEY_S):
+		velocity.y += GRAVITY * delta * 0.55
 
 	if not is_on_ground:
 		velocity.y += GRAVITY * delta
 
-	global_position += velocity * delta
-	global_position.x = clamp(global_position.x, SCREEN_MARGIN, get_viewport_rect().size.x - SCREEN_MARGIN)
+	position += velocity * delta
+	position.x = clamp(position.x, SCREEN_MARGIN, world_width - SCREEN_MARGIN)
 	_land_on_platforms(previous_position)
 
-	if global_position.y >= ground_y:
-		global_position.y = ground_y
+	if position.y >= ground_y:
+		position.y = ground_y
 		velocity.y = 0.0
 		is_on_ground = true
 	elif is_on_ground and not _has_floor_support():
 		is_on_ground = false
 
 func reset_to_spawn(spawn_position: Vector2) -> void:
-	global_position = spawn_position
+	position = spawn_position
 	ground_y = spawn_position.y
 	velocity = Vector2.ZERO
 	is_on_ground = true
@@ -172,25 +176,28 @@ func reset_to_spawn(spawn_position: Vector2) -> void:
 func set_platforms(rects: Array[Rect2]) -> void:
 	platform_rects = rects
 
+func set_world_width(value: float) -> void:
+	world_width = max(value, get_viewport_rect().size.x)
+
 func _land_on_platforms(previous_position: Vector2) -> void:
 	if velocity.y < 0.0:
 		return
 	for rect in platform_rects:
 		var was_above: bool = previous_position.y <= rect.position.y
-		var is_inside_x: bool = global_position.x >= rect.position.x - 18.0 and global_position.x <= rect.position.x + rect.size.x + 18.0
-		var crossed_top: bool = global_position.y >= rect.position.y and global_position.y <= rect.position.y + 20.0
+		var is_inside_x: bool = position.x >= rect.position.x - 18.0 and position.x <= rect.position.x + rect.size.x + 18.0
+		var crossed_top: bool = position.y >= rect.position.y and position.y <= rect.position.y + 20.0
 		if was_above and is_inside_x and crossed_top:
-			global_position.y = rect.position.y
+			position.y = rect.position.y
 			velocity.y = 0.0
 			is_on_ground = true
 			return
 
 func _has_floor_support() -> bool:
-	if absf(global_position.y - ground_y) <= 1.0:
+	if absf(position.y - ground_y) <= 1.0:
 		return true
 	for rect in platform_rects:
-		var is_same_y: bool = absf(global_position.y - rect.position.y) <= 1.0
-		var is_inside_x: bool = global_position.x >= rect.position.x - 16.0 and global_position.x <= rect.position.x + rect.size.x + 16.0
+		var is_same_y: bool = absf(position.y - rect.position.y) <= 1.0
+		var is_inside_x: bool = position.x >= rect.position.x - 16.0 and position.x <= rect.position.x + rect.size.x + 16.0
 		if is_same_y and is_inside_x:
 			return true
 	return false
@@ -199,10 +206,10 @@ func get_velocity() -> Vector2:
 	return velocity
 
 func get_body_rect() -> Rect2:
-	return Rect2(global_position + Vector2(-18, -58), Vector2(36, 58))
+	return Rect2(position + Vector2(-18, -58), Vector2(36, 58))
 
 func get_feet_position() -> Vector2:
-	return global_position
+	return position
 
 func set_aim(angle_rad: float) -> void:
 	# Compatibilidad con versiones anteriores: permite seguir asignando θ directo.
@@ -230,7 +237,7 @@ func get_aim_direction() -> Vector2:
 	return Vector2(cos(aim_angle), sin(aim_angle)).normalized()
 
 func get_aim_origin_global_position() -> Vector2:
-	return global_position + AIM_ORIGIN_LOCAL
+	return position + AIM_ORIGIN_LOCAL
 
 func get_muzzle_global_position() -> Vector2:
 	# La punta de la lanza es el mismo punto desde donde salen todos los disparos.
@@ -332,7 +339,7 @@ func _draw() -> void:
 	draw_rect(Rect2(-18, -5, 36, 5), Color(0.0, 0.0, 0.0, 0.25), true)
 
 	var texture: Texture2D = _get_current_texture()
-	var sprite_rect: Rect2 = Rect2(Vector2(-28.0, -68.0 + bob), Vector2(56.0, 64.0))
+	var sprite_rect: Rect2 = Rect2(Vector2(-32.0, -74.0 + bob), Vector2(64.0, 72.0))
 	if texture != null:
 		draw_texture_rect(texture, sprite_rect, false, Color(1.0, 1.0, 1.0, alpha))
 	else:

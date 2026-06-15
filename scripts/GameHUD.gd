@@ -42,7 +42,7 @@ func _build_interface() -> void:
 	left_panel.add_child(subtitle)
 	data_label = _make_label(Vector2(20, 66), Vector2(392, 84), "", 12, Color(1.0, 0.92, 0.70, 1.0), HORIZONTAL_ALIGNMENT_LEFT)
 	left_panel.add_child(data_label)
-	controls_label = _make_label(Vector2(20, 150), Vector2(392, 20), "A Rebote  |  F Rayo  |  S Guía  |  ESC Menú  |  I Datos", 12, Color(0.0, 0.95, 1.0, 0.95), HORIZONTAL_ALIGNMENT_LEFT)
+	controls_label = _make_label(Vector2(20, 150), Vector2(392, 20), "A/D Mover | W Saltar | S Bajar | Q Rebote | E Rayo | R Guía", 12, Color(0.0, 0.95, 1.0, 0.95), HORIZONTAL_ALIGNMENT_LEFT)
 	left_panel.add_child(controls_label)
 	mechanic_label = _make_label(Vector2(20, 174), Vector2(392, 20), "Última mecánica: pendiente", 12, Color(1.0, 0.86, 0.35, 1.0), HORIZONTAL_ALIGNMENT_LEFT)
 	left_panel.add_child(mechanic_label)
@@ -72,9 +72,9 @@ func _build_interface() -> void:
 	objective_panel.add_child(objective_bar)
 
 	# Botones/íconos de habilidades a la derecha.
-	ability_a_label = _make_ability_badge(Vector2(1160, 365), "A", "REBOTE")
-	ability_f_label = _make_ability_badge(Vector2(1160, 455), "F", "RAYO")
-	ability_s_label = _make_ability_badge(Vector2(1160, 545), "S", "GUÍA")
+	ability_a_label = _make_ability_badge(Vector2(1160, 365), "Q", "REBOTE")
+	ability_f_label = _make_ability_badge(Vector2(1160, 455), "E", "RAYO")
+	ability_s_label = _make_ability_badge(Vector2(1160, 545), "R", "GUÍA")
 
 	# Panel inferior de métricas.
 	var bottom_panel: Panel = _make_panel(Vector2(365, 645), Vector2(720, 56), Color(0.01, 0.03, 0.035, 0.74), Color(0.0, 0.95, 1.0, 0.45), 8, 1)
@@ -137,6 +137,9 @@ func update_data(data: Dictionary) -> void:
 	var last_advanced_mechanic: String = str(data.get("last_advanced_mechanic", "Pendiente"))
 	var last_cleaning_note: String = str(data.get("last_cleaning_note", "Parámetros válidos"))
 	var is_paused: bool = bool(data.get("is_paused", false))
+	var has_ricochet_power: bool = bool(data.get("has_ricochet_power", false))
+	var has_ray_power: bool = bool(data.get("has_ray_power", false))
+	var has_homing_power: bool = bool(data.get("has_homing_power", false))
 
 	top_lives.text = "♥ %d" % lives
 	top_score.text = "☀ %d" % score
@@ -149,7 +152,7 @@ func update_data(data: Dictionary) -> void:
 	data_label.text += "◎ θ %.1f° | Estado %s | Δθ %.1f°\n" % [theta_base_deg, cooldown_state, delta_theta_deg]
 	data_label.text += "✦ Proy. %d | Vel. %.0f | Recarga %.2fs\n" % [projectile_count, projectile_speed, cooldown]
 	data_label.text += "▣ Normal(%.0f,%.0f) | Rayo %.0f | Giro %.1f\n" % [normal_x, normal_y, ray_distance, turn_speed]
-	data_label.text += "A Rebote %d/%d | F Rayo %d/%d | S Guía %d/%d" % [ricochet_hits, ricochet_attempts, ray_hits, ray_attempts, homing_hits, homing_attempts]
+	data_label.text += "Q Rebote %d/%d | E Rayo %d/%d | R Guía %d/%d" % [ricochet_hits, ricochet_attempts, ray_hits, ray_attempts, homing_hits, homing_attempts]
 	mechanic_label.text = "Última mecánica: %s" % _short_text(last_advanced_mechanic, 52)
 	cleaning_label.text = "Limpieza de datos: %s" % _short_text(last_cleaning_note, 50)
 
@@ -159,9 +162,9 @@ func update_data(data: Dictionary) -> void:
 	bottom_precision.text = "Precisión\n%.1f%%" % level_precision
 	bottom_advanced.text = "Acierto av.\n%.1f%%" % advanced_hit_rate
 
-	ability_a_label.text = "A\nREBOTE\n%d/%d" % [ricochet_hits, maxi(1, ricochet_attempts)]
-	ability_f_label.text = "F\nRAYO\n%d/%d" % [ray_hits, maxi(1, ray_attempts)]
-	ability_s_label.text = "S\nGUÍA\n%d/%d" % [homing_hits, maxi(1, homing_attempts)]
+	ability_a_label.text = "Q\nREBOTE\n%s" % ("ON" if has_ricochet_power else "BLOQ")
+	ability_f_label.text = "E\nRAYO\n%s" % ("ON" if has_ray_power else "BLOQ")
+	ability_s_label.text = "R\nGUÍA\n%s" % ("ON" if has_homing_power else "BLOQ")
 
 func _on_pause_pressed() -> void:
 	pause_requested.emit()

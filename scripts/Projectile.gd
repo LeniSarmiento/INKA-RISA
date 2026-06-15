@@ -24,26 +24,37 @@ func setup(angle_rad: float, projectile_speed: float, p_shot_type: String) -> vo
 func _process(delta: float) -> void:
 	if finished:
 		return
-	trail.append(global_position)
+	var old_pos: Vector2 = position
+	trail.append(position)
 	if trail.size() > 8:
 		trail.pop_front()
-	global_position += direction * speed * delta
+	position += direction * speed * delta
 	life_time -= delta
-	_check_target_collision()
-	if life_time <= 0.0 or global_position.x > 1350 or global_position.x < -90 or global_position.y < -90 or global_position.y > 780:
+	_check_target_collision(old_pos)
+	if life_time <= 0.0 or position.x > 3100 or position.x < -90 or position.y < -90 or position.y > 780:
 		_finish(false)
 	queue_redraw()
 
-func _check_target_collision() -> void:
+func _check_target_collision(old_pos: Vector2) -> void:
 	for target in get_tree().get_nodes_in_group("targets"):
 		if not is_instance_valid(target):
 			continue
 		if target.is_dead:
 			continue
-		if global_position.distance_to(target.global_position) <= target.get_hit_radius():
+		var hit_center: Vector2 = target.call("get_hit_center") if target.has_method("get_hit_center") else target.position
+		var hit_distance: float = _distance_point_to_segment(hit_center, old_pos, position)
+		if hit_distance <= target.get_hit_radius():
 			target.take_hit()
 			_finish(true)
 			return
+
+func _distance_point_to_segment(point: Vector2, a: Vector2, b: Vector2) -> float:
+	var ab: Vector2 = b - a
+	var ab_len_sq: float = ab.length_squared()
+	if ab_len_sq <= 0.001:
+		return point.distance_to(a)
+	var t: float = clamp((point - a).dot(ab) / ab_len_sq, 0.0, 1.0)
+	return point.distance_to(a + ab * t)
 
 func _finish(was_hit: bool) -> void:
 	if finished:
@@ -54,7 +65,7 @@ func _finish(was_hit: bool) -> void:
 
 func _draw() -> void:
 	for i in range(trail.size()):
-		var p: Vector2 = to_local(trail[i])
+		var p: Vector2 = trail[i] - position
 		var a = float(i + 1) / float(trail.size())
 		draw_circle(p, 8.0 * a, Color(1.0, 0.72, 0.12, 0.16 * a))
 	draw_circle(Vector2.ZERO, 9, Color(1.0, 0.86, 0.16, 0.98))

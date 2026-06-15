@@ -26,6 +26,9 @@ var label_offsets: Array[Vector2] = [
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	var state: Node = get_node_or_null("/root/GameState")
+	if is_instance_valid(state):
+		selected_level = clamp(int(state.get("selected_level")), 1, 10)
 	queue_redraw()
 
 func _process(delta: float) -> void:

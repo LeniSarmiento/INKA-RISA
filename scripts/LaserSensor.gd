@@ -34,18 +34,18 @@ func _scan_targets(apply_damage: bool) -> void:
 		return
 
 	# Posición inicial y dirección del rayo según el ángulo θ del jugador.
-	global_position = source_player.call("get_muzzle_global_position")
+	position = source_player.call("get_muzzle_global_position")
 	var aim_angle: float = float(source_player.get("aim_angle"))
 	last_direction = Vector2(cos(aim_angle), sin(aim_angle)).normalized()
 
 	last_hit = false
 	last_hit_distance = ray_distance
-	last_hit_point = global_position + last_direction * ray_distance
+	last_hit_point = position + last_direction * ray_distance
 	last_hit_name = "Sin detección"
 
 	var best_target: Node2D = null
 	var best_distance: float = ray_distance + 1.0
-	var ray_end: Vector2 = global_position + last_direction * ray_distance
+	var ray_end: Vector2 = position + last_direction * ray_distance
 
 	for item in get_tree().get_nodes_in_group("targets"):
 		var target: Node2D = item as Node2D
@@ -53,9 +53,10 @@ func _scan_targets(apply_damage: bool) -> void:
 			continue
 		if bool(target.get("is_dead")):
 			continue
+		var target_center: Vector2 = target.call("get_hit_center") if target.has_method("get_hit_center") else target.position
 
-		var d_to_line: float = _distance_point_to_segment(target.global_position, global_position, ray_end)
-		var projected_distance: float = (target.global_position - global_position).dot(last_direction)
+		var d_to_line: float = _distance_point_to_segment(target_center, position, ray_end)
+		var projected_distance: float = (target_center - position).dot(last_direction)
 		var target_radius: float = float(target.call("get_hit_radius"))
 
 		if projected_distance >= 0.0 and projected_distance <= ray_distance and d_to_line <= target_radius:
@@ -66,7 +67,7 @@ func _scan_targets(apply_damage: bool) -> void:
 	if is_instance_valid(best_target):
 		last_hit = true
 		last_hit_distance = best_distance
-		last_hit_point = global_position + last_direction * best_distance
+		last_hit_point = position + last_direction * best_distance
 		last_hit_name = best_target.name
 		if apply_damage:
 			best_target.call("take_hit")
@@ -85,8 +86,8 @@ func _draw() -> void:
 	if not is_instance_valid(source_player):
 		return
 
-	var end_global: Vector2 = last_hit_point if last_hit else global_position + last_direction * ray_distance
-	var end_point: Vector2 = to_local(end_global)
+	var end_global: Vector2 = last_hit_point if last_hit else position + last_direction * ray_distance
+	var end_point: Vector2 = end_global - position
 	var ray_color: Color = Color(1.0, 0.15, 0.05, 0.92) if last_hit else Color(0.0, 0.9, 1.0, 0.50)
 	var ray_width: float = 7.0 if active_timer > 0.0 else 2.0
 
